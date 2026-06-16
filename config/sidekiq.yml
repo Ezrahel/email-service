@@ -1,32 +1,31 @@
 ---
-:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 10) %>
+:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 15) %>
 :pidfile: tmp/pids/sidekiq.pid
 :logfile: log/sidekiq.log
+:timeout: 30
 :queues:
-  - [analytics, 1]
-  - [webhooks, 2]
+  - [critical, 7]
+  - [deliveries, 6]
+  - [emails, 5]
+  - [webhooks, 4]
   - [events, 3]
-  - [providers, 4]
-  - [domains, 4]
-  - [default, 5]
-:schedule:
-  analytics_rollup:
-    cron: "*/5 * * * *"
-    class: Analytics::AggregationWorker
-    queue: analytics
-  domain_verification:
-    cron: "0 */6 * * *"
-    class: Providers::DomainVerificationWorker
-    queue: domains
-  email_retry:
-    cron: "*/2 * * * *"
-    class: Email::RetryWorker
-    queue: default
-  billing_cycle:
-    cron: "0 0 1 * *"
-    class: Billing::CycleWorker
-    queue: default
-  data_retention:
-    cron: "0 3 * * *"
-    class: Email::DataRetentionWorker
-    queue: analytics
+  - [analytics, 2]
+  - [maintenance, 1]
+:scheduler:
+  :schedule:
+    retry_failed_deliveries:
+      cron: "*/5 * * * *"
+      class: RetryFailedDeliveryWorker
+      queue: maintenance
+    metrics_aggregation:
+      cron: "*/5 * * * *"
+      class: MetricsAggregationWorker
+      queue: analytics
+    cleanup_worker:
+      cron: "0 3 * * *"
+      class: CleanupWorker
+      queue: maintenance
+    partition_maintenance:
+      cron: "0 0 1 * *"
+      class: PartitionMaintenanceWorker
+      queue: maintenance

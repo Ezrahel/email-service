@@ -1,0 +1,34 @@
+en:
+  activerecord:
+    errors:
+      messages:
+        taken: "has already been taken"
+        record_invalid: "Validation failed: %{errors}"
+  errors:
+    messages:
+      not_found: "not found"
+      already_confirmed: "was already confirmed"
+      not_locked: "was not locked"
+      not_saved:
+        one: "1 error prohibited this %{resource} from being saved:"
+        other: "%{count} errors prohibited this %{resource} from being saved:"
+  api:
+    errors:
+      authentication:
+        missing_key: "API key is missing"
+        invalid_key: "API key is invalid"
+        expired_key: "API key has expired"
+        revoked_key: "API key has been revoked"
+      rate_limit:
+        exceeded: "Rate limit exceeded. Try again in %{retry_after} seconds"
+      validation:
+        failed: "Validation failed"
+      not_found:
+        email: "Email not found"
+        domain: "Domain not found"
+        template: "Template not found"
+      provider:
+        unavailable: "No email provider available"
+        failed: "Provider returned an error: %{message}"
+      idempotency:
+        mismatch: "Idempotency key mismatch: different parameters for same key"

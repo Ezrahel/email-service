@@ -1,0 +1,51 @@
+# Rails
+*.rbc
+.bundle
+vendor/bundle
+public/system
+public/assets
+public/packs
+node_modules
+
+# Database
+db/schema.rb
+db/*.sqlite3
+
+# Environment
+.env
+.env.local
+.env.production
+.env.staging
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+log/
+tmp/
+*.log
+
+# Tmp
+/tmp
+
+# Coverage
+coverage/
+simplecov/
+
+# Docker
+.docker/
+
+# Credentials
+config/master.key
+config/credentials/*.key
+
+# Annotations
+db/annotate/

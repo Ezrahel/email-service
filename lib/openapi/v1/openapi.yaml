@@ -1,0 +1,404 @@
+openapi: "3.1.0"
+info:
+  title: Email Service API
+  description: |
+    Production-grade transactional email API.
+    Send, track, and manage emails with reliable delivery infrastructure.
+  version: "1.0.0"
+  contact:
+    name: Engineering
+    email: engineering@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: https://api.staging.example.com
+    description: Staging
+  - url: http://localhost:3000
+    description: Local development
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /v1/emails:
+    post:
+      summary: Send an email
+      operationId: sendEmail
+      tags: [Emails]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendEmailRequest"
+      responses:
+        "201":
+          description: Email queued for delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    get:
+      summary: List emails
+      operationId: listEmails
+      tags: [Emails]
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: List of emails
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Email"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+
+  /v1/emails/{id}:
+    get:
+      summary: Get email details
+      operationId: getEmail
+      tags: [Emails]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Email details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Email"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/batch:
+    post:
+      summary: Send batch emails
+      operationId: sendBatch
+      tags: [Emails]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                messages:
+                  type: array
+                  maxItems: 1000
+                  items:
+                    $ref: "#/components/schemas/SendEmailRequest"
+      responses:
+        "201":
+          description: Batch accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      batch_id:
+                        type: string
+                        format: uuid
+                      total:
+                        type: integer
+                      accepted:
+                        type: integer
+                      rejected:
+                        type: integer
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+
+  /v1/templates/send:
+    post:
+      summary: Send template email
+      operationId: sendTemplate
+      tags: [Templates]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [template_id, to]
+              properties:
+                template_id:
+                  type: string
+                  format: uuid
+                to:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                from:
+                  type: string
+                  format: email
+                subject:
+                  type: string
+                variables:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        "201":
+          description: Template email queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailResponse"
+
+  /v1/domains:
+    post:
+      summary: Add a sending domain
+      operationId: createDomain
+      tags: [Domains]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain]
+              properties:
+                domain:
+                  type: string
+                  format: hostname
+                region:
+                  type: string
+                  enum: [us, eu]
+      responses:
+        "201":
+          description: Domain created
+  /v1/domains/{id}/verify:
+    post:
+      summary: Verify domain DNS records
+      operationId: verifyDomain
+      tags: [Domains]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Verification result
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: |
+        API keys prefixed with `em_`.
+        Include as `Authorization: Bearer em_xxxxx`.
+
+  schemas:
+    SendEmailRequest:
+      type: object
+      required: [from, to, subject]
+      properties:
+        from:
+          type: string
+          format: email
+          example: hello@example.com
+        to:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: string
+            format: email
+          example: [user@example.com]
+        subject:
+          type: string
+          maxLength: 998
+          example: Welcome
+        html:
+          type: string
+          example: "<h1>Hello</h1>"
+        text:
+          type: string
+          example: "Hello"
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+        scheduled_at:
+          type: string
+          format: date-time
+          nullable: true
+        idempotency_key:
+          type: string
+          maxLength: 255
+        reply_to:
+          type: string
+          format: email
+        cc:
+          type: array
+          items:
+            type: string
+            format: email
+        bcc:
+          type: array
+          items:
+            type: string
+            format: email
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+              content:
+                type: string
+                format: byte
+              content_type:
+                type: string
+
+    Email:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        from:
+          type: string
+          format: email
+        to:
+          type: array
+          items:
+            type: string
+            format: email
+        subject:
+          type: string
+        status:
+          type: string
+          enum:
+            - queued
+            - sending
+            - delivered
+            - failed
+            - bounced
+            - opened
+            - clicked
+            - cancelled
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        scheduled_at:
+          type: string
+          format: date-time
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+
+    EmailResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Email"
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 50
+        maximum: 100
+    Offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+
+  responses:
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

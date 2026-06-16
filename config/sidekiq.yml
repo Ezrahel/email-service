@@ -1,0 +1,32 @@
+---
+:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 10) %>
+:pidfile: tmp/pids/sidekiq.pid
+:logfile: log/sidekiq.log
+:queues:
+  - [analytics, 1]
+  - [webhooks, 2]
+  - [events, 3]
+  - [providers, 4]
+  - [domains, 4]
+  - [default, 5]
+:schedule:
+  analytics_rollup:
+    cron: "*/5 * * * *"
+    class: Analytics::AggregationWorker
+    queue: analytics
+  domain_verification:
+    cron: "0 */6 * * *"
+    class: Providers::DomainVerificationWorker
+    queue: domains
+  email_retry:
+    cron: "*/2 * * * *"
+    class: Email::RetryWorker
+    queue: default
+  billing_cycle:
+    cron: "0 0 1 * *"
+    class: Billing::CycleWorker
+    queue: default
+  data_retention:
+    cron: "0 3 * * *"
+    class: Email::DataRetentionWorker
+    queue: analytics

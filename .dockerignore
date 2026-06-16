@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env*
+*.md
+coverage/
+log/
+tmp/
+vendor/bundle
+node_modules
+spec/
+test/
+docker-compose.yml
+Dockerfile
+terraform/
+k8s/

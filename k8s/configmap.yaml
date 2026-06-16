@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: email-service-config
+  namespace: email-service
+data:
+  RAILS_ENV: "production"
+  RAILS_LOG_LEVEL: "info"
+  RAILS_MAX_THREADS: "10"
+  WEB_CONCURRENCY: "4"
+  SIDEKIQ_CONCURRENCY: "15"
+  SIDEKIQ_QUEUES: "default,providers,events,webhooks,analytics,domains"
+  OTEL_EXPORTER: "otlp"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+  OTEL_SERVICE_NAME: "email-service"
+  RATE_LIMIT_EMAILS_PER_SECOND: "50"
+  RATE_LIMIT_EMAILS_PER_DAY: "10000"
+  RATE_LIMIT_API_REQUESTS_PER_MINUTE: "300"
+  AWS_REGION: "us-east-1"
+  S3_REGION: "us-east-1"
+  S3_BUCKET: "email-service-storage"

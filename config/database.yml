@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 10) %>
+  url: <%= ENV.fetch("DATABASE_URL") %>
+  variables:
+    statement_timeout: 5000
+
+development:
+  <<: *default
+  database: email_service_development
+
+test:
+  <<: *default
+  database: email_service_test
+
+production:
+  <<: *default
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 25) %>
+  prepared_statements: false
+  variables:
+    statement_timeout: 10000

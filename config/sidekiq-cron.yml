@@ -1,0 +1,8 @@
+---
+:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 10) %>
+:pidfile: tmp/pids/sidekiq-cron.pid
+:logfile: log/sidekiq-cron.log
+:queues:
+  - [analytics, 1]
+  - [domains, 2]
+  - [default, 3]

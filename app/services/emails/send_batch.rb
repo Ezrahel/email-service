@@ -16,11 +16,11 @@ module Emails
     end
 
     def call
-      raise Errors::ValidationError, "Batch too large (max #{MAX_BATCH_SIZE})" if @total > MAX_BATCH_SIZE
+      raise ValidationError, "Batch too large (max #{MAX_BATCH_SIZE})" if @total > MAX_BATCH_SIZE
 
       @messages.each do |msg_params|
         process_message(msg_params)
-      rescue Errors::ApplicationError => e
+      rescue ApplicationError => e
         @errors << { message: msg_params, error: e.message }
         @rejected += 1
       end

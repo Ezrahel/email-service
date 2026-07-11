@@ -1,11 +1,14 @@
+require_dependency "application_error"
+
 module ErrorHandler
   extend ActiveSupport::Concern
 
   included do
+
     rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
     rescue_from ActiveRecord::RecordInvalid, with: :handle_validation_error
     rescue_from ActionController::ParameterMissing, with: :handle_parameter_missing
-    rescue_from Errors::ApplicationError, with: :handle_api_error
+    rescue_from ::ApplicationError, with: :handle_api_error
   end
 
   private
@@ -15,28 +18,29 @@ module ErrorHandler
   end
 
   def handle_not_found(exception)
-    error = Errors::NotFoundError.new(exception.message)
+    error = NotFoundError.new(exception.message)
     render json: error.to_h, status: :not_found
   end
 
   def handle_validation_error(exception)
     details = exception.record.errors.messages.transform_values(&:join)
-    error = Errors::ValidationError.new(details: details)
+    error = ValidationError.new(details: details)
     render json: error.to_h, status: :unprocessable_entity
   end
 
   def handle_parameter_missing(exception)
-    error = Errors::ValidationError.new("Missing parameter: #{exception.param}")
+    error = ValidationError.new("Missing parameter: #{exception.param}")
     render json: error.to_h, status: :unprocessable_entity
   end
 
   def render_error(code:, message:, status:, details: {})
-    error = Errors::ApplicationError.new(message, code: code, status: Rack::Utils.status_code(status), details: details)
+    error = ApplicationError.new(message, code: code, status: Rack::Utils.status_code(status), details: details)
     render json: error.to_h, status: status
   end
 
-  def render_success(data, status: :ok, meta: {})
-    result = { data: data }
+  def render_success(data = nil, status: :ok, meta: {}, **extra)
+    payload = data || extra
+    result = { data: payload }
     result[:meta] = meta if meta.present?
     render json: result, status: status
   end

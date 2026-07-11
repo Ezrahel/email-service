@@ -8,7 +8,7 @@ class CreateWebhooks < ActiveRecord::Migration[8.0]
       t.string :secret, null: false
       t.string :status, null: false, default: "active"
       t.jsonb :headers, null: false, default: {}
-      t.string :signing_key, encrypted: true
+      t.text :signing_key_ciphertext
       t.string :api_version, null: false, default: "v1"
       t.boolean :is_active, null: false, default: true
       t.integer :retry_count, null: false, default: 3

@@ -59,7 +59,7 @@ module Api
 
       def require_api_key_scope!
         require_scope!("api_key:manage")
-      rescue Errors::ForbiddenError
+      rescue ForbiddenError
         raise unless action_name.in?(%w[index show])
       end
 

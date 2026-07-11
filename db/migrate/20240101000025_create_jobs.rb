@@ -79,7 +79,7 @@ class CreateJobs < ActiveRecord::Migration[8.0]
         FOR VALUES FROM ('2024-12-01') TO ('2025-01-01');
     SQL
 
-    add_index :jobs, :jid, unique: true, where: "jid IS NOT NULL"
+    add_index :jobs, :jid, where: "jid IS NOT NULL"
     add_index :jobs, :organization_id
     add_index :jobs, :status
     add_index :jobs, :job_type

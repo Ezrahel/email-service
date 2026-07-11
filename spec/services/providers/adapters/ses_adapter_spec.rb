@@ -1,3 +1,5 @@
+require_relative "shared_examples"
+
 RSpec.describe Providers::Adapters::SesAdapter do
   include_examples "provider adapter contract"
 

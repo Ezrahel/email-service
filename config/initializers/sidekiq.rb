@@ -3,8 +3,6 @@ require "sidekiq-unique-jobs"
 require "sidekiq/throttled"
 require "sidekiq-status"
 
-Sidekiq::Throttled.setup!
-
 Sidekiq.configure_server do |config|
   config.redis = {
     url: ENV.fetch("REDIS_SIDEKIQ_URL", "redis://localhost:6379/1"),
@@ -17,7 +15,6 @@ Sidekiq.configure_server do |config|
 
   config.server_middleware do |chain|
     chain.add SidekiqUniqueJobs::Middleware::Server
-    chain.add Sidekiq::Throttled::Middleware
   end
 
   SidekiqUniqueJobs::Server.configure(config)

@@ -1,0 +1,10 @@
+[<%= @severity %>] <%= @alert[:type].to_s.humanize %>
+<%= "=" * 60 %>
+
+<%= @message %>
+
+Organization: <%= @organization.name %>
+Current Value: <%= @value %>
+Threshold: <%= @threshold %>
+
+View Dashboard: <%= ENV.fetch('HOST', 'http://localhost:3000') %>/analytics

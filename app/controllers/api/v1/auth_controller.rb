@@ -11,7 +11,7 @@ module Api
         )
 
         unless result.success?
-          raise Errors::AuthError, result.error
+          raise AuthError, result.error
         end
 
         render_success(
@@ -26,7 +26,7 @@ module Api
         result = AuthService.refresh_token(params[:refresh_token])
 
         unless result.success?
-          raise Errors::AuthError, result.error
+          raise AuthError, result.error
         end
 
         render_success(

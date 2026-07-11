@@ -20,7 +20,7 @@ class AuthService
     end
   end
 
-  JWT_ALGORITHM = "RS256"
+  JWT_ALGORITHM = "HS256"
   ACCESS_TOKEN_TTL = ENV.fetch("JWT_ACCESS_TOKEN_TTL", 900).to_i.seconds
   REFRESH_TOKEN_TTL = ENV.fetch("JWT_REFRESH_TOKEN_TTL", 604800).to_i.seconds
 
@@ -143,10 +143,12 @@ class AuthService
     def jwt_secret
       @jwt_secret ||= begin
         key = ENV["JWT_SECRET"]
-        if key&.include?("BEGIN RSA PRIVATE KEY")
+        if key.present? && key.include?("BEGIN RSA PRIVATE KEY")
           OpenSSL::PKey::RSA.new(key)
+        elsif key.present?
+          key
         else
-          key || "fallback-secret-do-not-use-in-production"
+          "fallback-secret-do-not-use-in-production"
         end
       end
     end

@@ -17,7 +17,7 @@ class EmailSubmissionWorker < ApplicationWorker
     )
   rescue ActiveRecord::RecordNotFound
     logger.warn "Email #{email_id} not found, skipping"
-  rescue Errors::ApplicationError => e
+  rescue ApplicationError => e
     email&.mark_failed!(reason: e.message, code: e.code)
     raise
   end

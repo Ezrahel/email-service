@@ -30,7 +30,7 @@ class DeadLetterService
       return unless delivery
 
       if organization_id && delivery.organization_id != organization_id
-        raise Errors::ForbiddenError, "Delivery does not belong to this organization"
+        raise ForbiddenError, "Delivery does not belong to this organization"
       end
 
       delivery.update!(

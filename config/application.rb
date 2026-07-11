@@ -12,6 +12,8 @@ require "rails/test_unit/railtie"
 Bundler.require(*Rails.groups)
 
 module EmailService
+  VERSION = "0.2.0".freeze
+
   class Application < Rails::Application
     config.load_defaults 8.0
 

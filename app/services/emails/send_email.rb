@@ -65,7 +65,7 @@ module Emails
     def check_quota!
       return unless @organization.monthly_email_sent >= @organization.monthly_email_quota
 
-      raise Errors::QuotaExceededError
+      raise QuotaExceededError
     end
 
     def check_idempotency!
@@ -73,7 +73,7 @@ module Emails
 
       return unless existing
 
-      raise Errors::IdempotencyError, "Email already sent with this idempotency key"
+      raise IdempotencyError, "Email already sent with this idempotency key"
     end
 
     def validate_domain!(from_address)
@@ -82,7 +82,7 @@ module Emails
 
       domain = @organization.domains.verified.find_by(domain: domain_name)
 
-      raise Errors::ValidationError, "Domain #{domain_name} is not verified" unless domain
+      raise ValidationError, "Domain #{domain_name} is not verified" unless domain
     end
 
     def extract_domain(from_address)

@@ -19,7 +19,7 @@ module Api
         form = CreateDomainForm.new(domain_params.merge(organization: current_organization))
 
         unless form.valid?
-          raise Errors::ValidationError, details: form.errors.messages
+          raise ValidationError, details: form.errors.messages
         end
 
         result = Domains::CreateDomain.call(
@@ -67,7 +67,7 @@ module Api
 
       def require_domain_scope!
         require_scope!("domain:manage")
-      rescue Errors::ForbiddenError
+      rescue ForbiddenError
         raise unless action_name.in?(%w[index show])
       end
 

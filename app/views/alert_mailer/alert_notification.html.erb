@@ -1,0 +1,22 @@
+<h2 style="color: #dc2626;">[<%= @severity %>] <%= @alert[:type].to_s.humanize %></h2>
+
+<div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 16px 0;">
+  <p style="margin: 0; font-size: 16px;"><%= @message %></p>
+</div>
+
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+  <tr>
+    <td style="padding: 8px 12px; border: 1px solid #e5e7eb; font-weight: 600;">Organization</td>
+    <td style="padding: 8px 12px; border: 1px solid #e5e7eb;"><%= @organization.name %></td>
+  </tr>
+  <tr>
+    <td style="padding: 8px 12px; border: 1px solid #e5e7eb; font-weight: 600;">Current Value</td>
+    <td style="padding: 8px 12px; border: 1px solid #e5e7eb;"><%= @value %></td>
+  </tr>
+  <tr>
+    <td style="padding: 8px 12px; border: 1px solid #e5e7eb; font-weight: 600;">Threshold</td>
+    <td style="padding: 8px 12px; border: 1px solid #e5e7eb;"><%= @threshold %></td>
+  </tr>
+</table>
+
+<p><a href="<%= ENV.fetch('HOST', 'http://localhost:3000') %>/analytics" style="display: inline-block; background: #6366f1; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">View Dashboard</a></p>

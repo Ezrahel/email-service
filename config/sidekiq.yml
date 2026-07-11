@@ -29,3 +29,30 @@
       cron: "0 0 1 * *"
       class: PartitionMaintenanceWorker
       queue: maintenance
+    analytics_aggregation_1m:
+      cron: "* * * * *"
+      class: AnalyticsAggregationWorker
+      queue: analytics
+      args: ["1m"]
+    analytics_aggregation_5m:
+      cron: "*/5 * * * *"
+      class: AnalyticsAggregationWorker
+      queue: analytics
+      args: ["5m"]
+    analytics_aggregation_1h:
+      cron: "0 * * * *"
+      class: AnalyticsAggregationWorker
+      queue: analytics
+      args: ["1h"]
+    data_retention:
+      cron: "0 4 * * *"
+      class: DataRetentionWorker
+      queue: maintenance
+    alert_evaluation:
+      cron: "*/5 * * * *"
+      class: AlertEvaluationWorker
+      queue: analytics
+    billing_aggregation:
+      cron: "0 2 * * *"
+      class: BillingAggregationWorker
+      queue: analytics

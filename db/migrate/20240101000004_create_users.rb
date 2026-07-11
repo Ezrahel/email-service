@@ -10,7 +10,7 @@ class CreateUsers < ActiveRecord::Migration[8.0]
       t.string :locale, null: false, default: "en"
       t.string :status, null: false, default: "active"
       t.boolean :mfa_enabled, null: false, default: false
-      t.string :mfa_secret, encrypted: true
+      t.text :mfa_secret_ciphertext
       t.integer :failed_login_attempts, null: false, default: 0
       t.datetime :locked_at
       t.datetime :last_login_at

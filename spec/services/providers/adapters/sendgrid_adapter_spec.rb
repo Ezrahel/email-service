@@ -1,3 +1,5 @@
+require_relative "shared_examples"
+
 RSpec.describe Providers::Adapters::SendgridAdapter do
   include_examples "provider adapter contract"
 

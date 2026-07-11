@@ -14,10 +14,7 @@ class Rack::Attack
     req.env["HTTP_AUTHORIZATION"]
   end
 
-  # Block IPs that exceed a high threshold
-  blocklist("block/abusive_ips") do |req|
-    Rack::Attack::Allow2Block.new(ENV.fetch("RATE_LIMIT_BLOCK_THRESHOLD", 1000).to_i, 1.hour).blocklisted?(req.ip)
-  end
+
 
   # Custom throttle response
   self.throttled_responder = lambda do |req|

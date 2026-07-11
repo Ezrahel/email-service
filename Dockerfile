@@ -6,6 +6,8 @@ RUN apt-get update -qq && \
       build-essential \
       libpq-dev \
       libcurl4-openssl-dev \
+      libffi-dev \
+      libyaml-dev \
       git \
       ca-certificates && \
     rm -rf /var/lib/apt/lists/*
@@ -13,7 +15,8 @@ RUN apt-get update -qq && \
 WORKDIR /app
 
 COPY Gemfile Gemfile.lock ./
-RUN bundle install --jobs 4 --retry 3 --without development test
+RUN bundle config set without 'development test' && \
+    bundle install --jobs 4 --retry 3
 
 # ── Runtime Stage ────────────────────────────────────────────────
 FROM ruby:3.4-slim AS runtime
@@ -23,8 +26,9 @@ RUN apt-get update -qq && \
       libpq-dev \
       libcurl4 \
       ca-certificates \
-      tzinfo \
-      curl && \
+      tzdata \
+      curl \
+      postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --system --gid 1000 rails && \

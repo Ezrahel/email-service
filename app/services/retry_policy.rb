@@ -20,8 +20,8 @@ class RetryPolicy
       return false if attempt >= MAX_RETRIES
 
       non_retryable = %w[
-        Errors::ValidationError Errors::AuthError Errors::ForbiddenError
-        Errors::NotFoundError Errors::QuotaExceededError
+        ValidationError AuthError ForbiddenError
+        NotFoundError QuotaExceededError
       ]
 
       return false if error_class && non_retryable.include?(error_class)

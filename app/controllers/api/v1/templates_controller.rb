@@ -18,7 +18,7 @@ module Api
         form = CreateTemplateForm.new(template_params.merge(organization: current_organization))
 
         unless form.valid?
-          raise Errors::ValidationError, details: form.errors.messages
+          raise ValidationError, details: form.errors.messages
         end
 
         template = current_organization.templates.create!(form.attributes)
@@ -88,7 +88,7 @@ module Api
 
       def require_template_scope!
         require_scope!("template:manage")
-      rescue Errors::ForbiddenError
+      rescue ForbiddenError
         raise unless action_name.in?(%w[index show])
       end
 

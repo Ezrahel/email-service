@@ -18,7 +18,7 @@ module Api
         form = CreateWebhookForm.new(webhook_params.merge(organization: current_organization))
 
         unless form.valid?
-          raise Errors::ValidationError, details: form.errors.messages
+          raise ValidationError, details: form.errors.messages
         end
 
         webhook = current_organization.webhooks.create!(form.attributes) do |w|
@@ -68,7 +68,7 @@ module Api
 
       def require_webhook_scope!
         require_scope!("webhook:manage")
-      rescue Errors::ForbiddenError
+      rescue ForbiddenError
         raise unless action_name.in?(%w[index show])
       end
 

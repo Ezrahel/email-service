@@ -16,7 +16,7 @@ module EmailPipeline
       errors << "Scheduled date is in the past" if @email.scheduled_at.present? && @email.scheduled_at < Time.current
 
       if errors.any?
-        raise Errors::ValidationError, "Email validation failed: #{errors.join(', ')}"
+        raise ValidationError, "Email validation failed: #{errors.join(', ')}"
       end
 
       true

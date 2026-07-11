@@ -1,9 +1,9 @@
 class CreateEmailMetrics < ActiveRecord::Migration[8.0]
   def change
     create_table :email_metrics, id: :uuid do |t|
-      t.references :organization, null: false, foreign_key: true, type: :uuid
-      t.references :email_message, foreign_key: true, type: :uuid
-      t.references :delivery, foreign_key: true, type: :uuid
+      t.references :organization, null: false, foreign_key: true, type: :uuid, index: false
+      t.references :email_message, foreign_key: false, type: :uuid, index: false
+      t.references :delivery, foreign_key: false, type: :uuid
       t.boolean :is_delivered, null: false, default: false
       t.boolean :is_opened, null: false, default: false
       t.boolean :is_clicked, null: false, default: false

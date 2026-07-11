@@ -41,6 +41,14 @@ Rails.application.routes.draw do
       get "analytics/deliverability", to: "analytics#deliverability"
       get "analytics/events",     to: "analytics#events"
 
+      # Dashboard
+      get "dashboard/overview",       to: "dashboard#overview"
+      get "dashboard/deliverability", to: "dashboard#deliverability"
+      get "dashboard/usage",          to: "dashboard#usage"
+      get "dashboard/providers",      to: "dashboard#providers"
+      get "dashboard/activity",       to: "dashboard#activity"
+      get "dashboard/alerts",         to: "dashboard#alerts"
+
       # API Keys
       resources :api_keys, only: %i[index create show destroy] do
         post :revoke, on: :member

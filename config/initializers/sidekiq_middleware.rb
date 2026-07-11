@@ -1,4 +1,8 @@
 require "sidekiq"
+require_relative "../../app/workers/sidekiq_middleware"
+require_relative "../../app/workers/sidekiq_middleware/logging"
+require_relative "../../app/workers/sidekiq_middleware/metrics"
+require_relative "../../app/workers/sidekiq_middleware/tracing"
 
 # ── Server Middleware ──────────────────────────────────────────
 Sidekiq.configure_server do |config|

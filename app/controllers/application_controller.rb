@@ -1,33 +1,20 @@
+require_dependency "application_error"
+
 class ApplicationController < ActionController::API
   include ActionController::MimeResponds
-  include ActionController::RequestForgeryProtection
+  include Pagy::Backend
 
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
   rescue_from ActionController::ParameterMissing, with: :bad_request
-  rescue_from RateLimitExceeded, with: :too_many_requests
+  rescue_from ::RateLimitError, with: :too_many_requests
 
-  before_action :authenticate_request
   before_action :set_request_attributes
-  before_action :check_ip_allowlist
 
   # ── Auth Context ────────────────────────────────────────────
   attr_reader :current_user, :current_organization, :current_api_key
 
   private
-
-  def authenticate_request
-    authenticator = Auth::AuthenticateRequest.new(request)
-    result = authenticator.call
-
-    if result.success?
-      @current_user = result.user
-      @current_organization = result.organization
-      @current_api_key = result.api_key
-    else
-      render json: { error: result.error }, status: :unauthorized
-    end
-  end
 
   def set_request_attributes
     Current.request_id = request.request_id

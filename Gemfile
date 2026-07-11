@@ -3,7 +3,7 @@ source "https://rubygems.org"
 ruby ">= 3.4"
 
 # ── Framework ────────────────────────────────────────────────
-gem "rails", "~> 8.0"
+gem "rails", "~> 8.1.3"
 gem "pg", "~> 1.5"
 gem "puma", "~> 6.4"
 gem "bootsnap", require: false
@@ -11,8 +11,7 @@ gem "bootsnap", require: false
 # ── API & Serialization ──────────────────────────────────────
 gem "rack-cors", "~> 2.0"
 gem "jsonapi-serializer", "~> 2.2"
-gem "kaminari", "~> 1.2"
-gem "api-pagination", "~> 5.0"
+gem "pagy", "~> 9.0"
 
 # ── Authentication & Authorization ───────────────────────────
 gem "bcrypt", "~> 3.1"
@@ -40,7 +39,7 @@ gem "net-smtp", "~> 0.5"
 gem "mail", "~> 2.8"
 
 # ── Resilience ───────────────────────────────────────────────
-gem "circuitbox", "~> 2.1"
+gem "circuitbox", "~> 2.0.0"
 gem "retriable", "~> 3.1"
 
 # ── Observability ────────────────────────────────────────────
@@ -59,7 +58,6 @@ gem "aws-sdk-s3", "~> 1.160"
 
 # ── DNS & Domain Verification ────────────────────────────────
 gem "resolv", "~> 0.4"
-gem "dnsbl-rb", "~> 1.0"
 
 # ── OpenAPI / API Docs ───────────────────────────────────────
 gem "rswag-api", "~> 2.14"
@@ -96,12 +94,10 @@ group :test do
   gem "vcr", "~> 6.3"
   gem "timecop", "~> 0.9"
   gem "email_spec", "~> 2.2"
+  gem "rspec-its", "~> 1.3"
 end
 
 group :development do
   gem "listen", "~> 3.9"
-  gem "spring", "~> 4.2"
-  gem "spring-commands-rspec", "~> 1.0"
-  gem "annotate", "~> 3.2"
   gem "letter_opener", "~> 1.10"
 end

@@ -9,7 +9,7 @@ module Api
         form = SendEmailForm.new(email_params.merge(organization: current_organization))
 
         unless form.valid?
-          raise Errors::ValidationError, details: form.errors.messages
+          raise ValidationError, details: form.errors.messages
         end
 
         result = Emails::SendEmail.call(
@@ -47,8 +47,8 @@ module Api
         require_scope!("email:send")
 
         messages = params[:messages] || []
-        raise Errors::ValidationError, "No messages provided" if messages.empty?
-        raise Errors::ValidationError, "Batch limit is 1000" if messages.size > 1000
+        raise ValidationError, "No messages provided" if messages.empty?
+        raise ValidationError, "Batch limit is 1000" if messages.size > 1000
 
         result = Emails::SendBatch.call(
           organization: current_organization,
@@ -95,13 +95,13 @@ module Api
 
       def require_email_scope!
         require_scope!("email:send")
-      rescue Errors::ForbiddenError
+      rescue ForbiddenError
         # Allow read-only access for index/show
         raise unless action_name.in?(%w[index show])
       end
 
       def pagy_meta(pagy)
-        { page: pagy.page, per_page: pagy.items, total: pagy.count, pages: pagy.pages }
+        { page: pagy.page, per_page: pagy.limit, total: pagy.count, pages: pagy.pages }
       end
     end
   end

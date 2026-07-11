@@ -248,7 +248,7 @@ puts "Seeding webhook..."
 demo_org.webhooks.find_or_create_by!(name: "Demo Webhook", url: "https://webhook.site/demo") do |w|
   w.events = %w[email.sent email.delivered email.failed email.bounced]
   w.secret = SecureRandom.hex(32)
-  w.signing_key = "whsec_#{SecureRandom.hex(16)}"
+  w.signing_key_ciphertext = "whsec_#{SecureRandom.hex(16)}"
   w.is_active = false
   w.status = "active"
 end

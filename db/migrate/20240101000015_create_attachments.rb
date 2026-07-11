@@ -1,7 +1,7 @@
 class CreateAttachments < ActiveRecord::Migration[8.0]
   def change
     create_table :attachments, id: :uuid do |t|
-      t.references :email_message, null: false, foreign_key: true, type: :uuid
+      t.references :email_message, null: false, foreign_key: false, type: :uuid, index: false
       t.string :filename, null: false
       t.string :content_type, null: false
       t.integer :byte_size, null: false

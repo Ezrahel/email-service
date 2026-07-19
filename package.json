@@ -1,0 +1,38 @@
+{
+  "name": "email-service",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Transactional email delivery platform - TypeScript migration",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,json,md}\"",
+    "typecheck": "turbo run typecheck",
+    "db:migrate": "turbo run db:migrate --filter=@email-service/database",
+    "db:seed": "turbo run db:seed --filter=@email-service/database",
+    "docker:build": "docker compose -f docker-compose.yml build",
+    "docker:up": "docker compose -f docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker-compose.yml down"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "prettier": "^3.3.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "dependencies": {
+    "better-auth": "^1.6.23",
+    "cockroachdb": "^1.0.3",
+    "zod": "^4.4.3"
+  }
+}

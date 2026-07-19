@@ -1,0 +1,33 @@
+{
+  "name": "@email-service/domain",
+  "type": "module",
+  "version": "0.2.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.1089.0",
+    "@email-service/logger": "workspace:*",
+    "@email-service/types": "workspace:*",
+    "nodemailer": "^9.0.3"
+  },
+  "devDependencies": {
+    "@email-service/tsconfig": "workspace:*",
+    "@types/node": "^20.14.0",
+    "@types/nodemailer": "^8.0.1",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

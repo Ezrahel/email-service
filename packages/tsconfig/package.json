@@ -1,0 +1,15 @@
+{
+  "name": "@email-service/tsconfig",
+  "type": "module",
+  "version": "0.2.0",
+  "private": true,
+  "main": "tsconfig.json",
+  "files": [
+    "tsconfig.json",
+    "tsconfig.node.json",
+    "tsconfig.test.json"
+  ],
+  "scripts": {
+    "build": "echo 'no build needed'"
+  }
+}

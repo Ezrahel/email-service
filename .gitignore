@@ -1,21 +1,16 @@
-# Rails
-*.rbc
-.bundle
-vendor/bundle
-public/system
-public/assets
-public/packs
-node_modules
+# Dependencies
+node_modules/
+.pnpm-store/
 
-# Database
-db/schema.rb
-db/*.sqlite3
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
 
 # Environment
 .env
 .env.local
-.env.production
-.env.staging
+.env.*.local
 
 # IDE
 .idea/
@@ -29,23 +24,36 @@ db/*.sqlite3
 Thumbs.db
 
 # Logs
-log/
-tmp/
 *.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Tmp
-/tmp
-
-# Coverage
+# Testing
 coverage/
-simplecov/
+.nyc_output/
 
 # Docker
 .docker/
 
-# Credentials
-config/master.key
-config/credentials/*.key
+# Database
+*.sqlite
+*.db
 
-# Annotations
-db/annotate/
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# TypeScript
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Misc
+*.pid
+*.seed
+*.pid.lock

@@ -1,78 +1,60 @@
-.PHONY: help setup dev test lint clean build docker-up docker-down db-prepare db-reset
+# Email Service - Makefile
+# Usage: make <target>
 
-.DEFAULT_GOAL := help
+.PHONY: help install dev test test-coverage lint typecheck build db-migrate db-seed docker-up docker-down clean
 
-help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+# Default target
+help:
+	@echo "Email Service - Available commands:"
+	@echo ""
+	@echo "  install       - Install all dependencies"
+	@echo "  dev           - Start development servers"
+	@echo "  test          - Run all tests"
+	@echo "  test-coverage - Run tests with coverage"
+	@echo "  lint          - Run linter"
+	@echo "  typecheck     - Run TypeScript type checking"
+	@echo "  build         - Build all packages"
+	@echo "  db-migrate    - Run database migrations"
+	@echo "  db-seed       - Seed development database"
+	@echo "  docker-up     - Start Docker infrastructure"
+	@echo "  docker-down   - Stop Docker infrastructure"
+	@echo "  clean         - Clean build artifacts"
+	@echo ""
 
-setup: ## Full project setup
-	@echo "==> Setting up project..."
-	cp -n .env.example .env || true
-	bundle install
-	bundle exec rails db:prepare
-	bundle exec rails db:seed
-	@echo "==> Done! Run 'make dev' to start."
+install:
+	pnpm install
 
-dev: ## Start development environment
-	@echo "==> Starting dev server..."
-	@foreman start -f Procfile.dev
+dev:
+	pnpm dev
 
-docker-build: ## Build Docker images
-	docker compose build
+test:
+	pnpm test
 
-docker-up: ## Start all Docker services
-	docker compose up -d --remove-orphans
+test-coverage:
+	pnpm test:coverage
 
-docker-down: ## Stop all Docker services
-	docker compose down
+lint:
+	pnpm lint
 
-docker-logs: ## Tail Docker logs
-	docker compose logs -f
+typecheck:
+	pnpm typecheck
 
-db-prepare: ## Prepare database (create, migrate, seed)
-	bundle exec rails db:create db:migrate db:seed
+build:
+	pnpm build
 
-db-reset: ## Reset database
-	bundle exec rails db:drop db:create db:migrate db:seed
+db-migrate:
+	pnpm db:migrate
 
-db-migrate: ## Run migrations
-	bundle exec rails db:migrate
+db-seed:
+	pnpm db:seed
 
-test: ## Run all tests
-	bundle exec rspec
+docker-up:
+	pnpm docker:up
 
-test-coverage: ## Run tests with coverage
-	COVERAGE=true bundle exec rspec
+docker-down:
+	pnpm docker:down
 
-test-load: ## Run load tests
-	@echo "==> Running load tests..."
-	@bundle exec ruby lib/tasks/load_test.rb
-
-lint: ## Run linters
-	bundle exec rubocop -A
-
-lint-check: ## Check linting without auto-fix
-	bundle exec rubocop
-
-console: ## Open Rails console
-	bundle exec rails console
-
-sidekiq: ## Start Sidekiq
-	bundle exec sidekiq -C config/sidekiq.yml
-
-ci: lint-check test ## Run CI pipeline
-
-clean: ## Clean temporary files
-	rm -rf tmp/*
-	rm -rf log/*
-	rm -rf coverage/
-	rm -rf vendor/bundle
-
-openapi: ## Generate OpenAPI spec
-	bundle exec rails rswag:specs:swaggerize
-
-seed: ## Seed database
-	bundle exec rails db:seed
-
-annotate: ## Annotate models
-	bundle exec annotate
+clean:
+	rm -rf node_modules dist .turbo coverage .nyc_output
+	find . -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true
+	find . -name "*.tsbuildinfo" -delete 2>/dev/null || true

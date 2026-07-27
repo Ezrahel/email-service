@@ -1,2 +1,6 @@
 packages:
   - "packages/*"
+  - "packages/workers/*"
+  - "packages/apps/*"
+  - "packages/tools/*"
+  - "apps/*"

@@ -1,0 +1,36 @@
+{
+  "name": "@email-service/email-processor",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@email-service/config": "workspace:*",
+    "@email-service/crypto": "workspace:*",
+    "@email-service/database": "workspace:*",
+    "@email-service/domain": "workspace:*",
+    "@email-service/errors": "workspace:*",
+    "@email-service/logger": "workspace:*",
+    "@email-service/queue": "workspace:*",
+    "@email-service/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@email-service/tsconfig": "workspace:*",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

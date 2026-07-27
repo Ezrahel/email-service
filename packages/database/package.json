@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@email-service/config": "workspace:*",
+    "@email-service/crypto": "workspace:*",
     "@email-service/errors": "workspace:*",
     "@email-service/logger": "workspace:*",
     "@email-service/types": "workspace:*",

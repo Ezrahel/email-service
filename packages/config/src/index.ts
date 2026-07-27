@@ -36,7 +36,7 @@ const envSchema = z.object({
 
   MAILGUN_API_KEY: z.string().optional(),
   MAILGUN_DOMAIN: z.string().optional(),
-  MAILGUN_BASE_URL: z.string().url().optional(),
+  MAILGUN_BASE_URL: z.string().url().optional().or(z.literal("")),
 
   SENDGRID_API_KEY: z.string().optional(),
 
@@ -50,7 +50,7 @@ const envSchema = z.object({
   API_KEY_PREFIX: z.string().default("em_"),
 
   // Storage
-  S3_ENDPOINT: z.string().url().optional(),
+  S3_ENDPOINT: z.string().url().optional().or(z.literal("")),
   S3_BUCKET: z.string().optional(),
   S3_ACCESS_KEY: z.string().optional(),
   S3_SECRET_KEY: z.string().optional(),
@@ -58,8 +58,8 @@ const envSchema = z.object({
 
   // Observability
   OTEL_EXPORTER_EL_EXPORTER: z.enum(["none", "console", "otlp"]).default("none"),
-  OTEL_ENDPOINT: z.string().url().optional(),
-  SENTRY_DSN: z.string().url().optional(),
+  OTEL_ENDPOINT: z.string().url().optional().or(z.literal("")),
+  SENTRY_DSN: z.string().url().optional().or(z.literal("")),
   SENTRY_ENVIRONMENT: z.string().optional(),
   PROMETHEUS_PORT: z.coerce.number().default(9090),
 

@@ -13,12 +13,10 @@ import { closeQueueConnections } from "@email-service/queue";
 import { initTelemetry, shutdownTelemetry } from "@email-service/telemetry";
 import {
   ApplicationError,
-  ValidationError,
   NotFoundError,
-  UnauthorizedError,
-  ForbiddenError,
   toApplicationError,
 } from "@email-service/errors";
+import { registerRoutes } from "./routes/index.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -120,42 +118,7 @@ async function buildServer(): Promise<FastifyInstance> {
     return { ready: true };
   });
 
-  server.get(`${env.API_PREFIX}/auth/login`, async () => {
-    return { message: "Use POST /auth/login with email and password" };
-  });
-
-  server.post<{ Body: { email: string; password: string } }>(
-    `${env.API_PREFIX}/auth/login`,
-    async (request, reply) => {
-      const { email, password } = request.body;
-      if (!email || !password) throw new ValidationError("Email and password required");
-      return reply.status(200).send({ message: "Login endpoint - implementation pending" });
-    }
-  );
-
-  server.get(`${env.API_PREFIX}/domains`, async () => {
-    return { message: "List domains - implementation pending" };
-  });
-
-  server.post(`${env.API_PREFIX}/domains`, async () => {
-    return { message: "Create domain - implementation pending" };
-  });
-
-  server.get(`${env.API_PREFIX}/templates`, async () => {
-    return { message: "List templates - implementation pending" };
-  });
-
-  server.post(`${env.API_PREFIX}/emails`, async () => {
-    return { message: "Send email - implementation pending" };
-  });
-
-  server.post(`${env.API_PREFIX}/emails/batch`, async () => {
-    return { message: "Send batch emails - implementation pending" };
-  });
-
-  server.get(`${env.API_PREFIX}/emails`, async () => {
-    return { message: "List emails - implementation pending" };
-  });
+  await server.register(registerRoutes, { prefix: env.API_PREFIX });
 
   return server;
 }

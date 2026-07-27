@@ -19,7 +19,11 @@
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.1089.0",
+    "@email-service/crypto": "workspace:*",
+    "@email-service/database": "workspace:*",
+    "@email-service/errors": "workspace:*",
     "@email-service/logger": "workspace:*",
+    "kysely": "^0.27.0",
     "@email-service/types": "workspace:*",
     "nodemailer": "^9.0.3"
   },

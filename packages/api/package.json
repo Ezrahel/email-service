@@ -17,6 +17,7 @@
     "@email-service/config": "workspace:*",
     "@email-service/crypto": "workspace:*",
     "@email-service/database": "workspace:*",
+    "@email-service/domain": "workspace:*",
     "@email-service/errors": "workspace:*",
     "@email-service/logger": "workspace:*",
     "@email-service/queue": "workspace:*",

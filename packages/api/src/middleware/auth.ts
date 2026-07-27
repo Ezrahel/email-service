@@ -1,6 +1,5 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { auth } from "@email-service/crypto";
-import { verifyAPIKey } from "@email-service/crypto";
+import { verifyAccessToken, verifyAPIKey } from "@email-service/crypto";
 import { UnauthorizedError, ForbiddenError } from "@email-service/errors";
 import { logger } from "@email-service/logger";
 import { db } from "@email-service/database";
@@ -51,18 +50,17 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
 
 async function validateSession(token: string, request: FastifyRequest): Promise<void> {
   try {
-    const session = await auth.api.getSession({
-      headers: new Headers({ authorization: `Bearer ${token}` }),
-    });
-
-    if (!session?.user || !session.session) {
-      throw new Error("Invalid or expired session");
-    }
-
+    const payload = await verifyAccessToken(token);
+    const membership = await db
+      .selectFrom("memberships")
+      .select("organization_id")
+      .where("user_id", "=", payload.sub)
+      .where("status", "=", "active")
+      .executeTakeFirst();
     (request as any).user = {
-      id: session.user.id,
-      email: session.user.email,
-      organizationId: (session.user as any).organizationId,
+      id: payload.sub,
+      email: payload.email,
+      organizationId: membership?.organization_id || "",
     };
   } catch (error) {
     throw new UnauthorizedError("Invalid or expired session");
@@ -127,7 +125,28 @@ async function validateAPIKey(key: string, request: FastifyRequest): Promise<voi
 
 export function requireScope(...requiredScopes: string[]) {
   return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    await authMiddleware(request, reply);
+
     const apiKey = (request as any).apiKey;
+    const user = (request as any).user;
+
+    if (user) {
+      if (!user.organizationId) {
+        const membership = await db
+          .selectFrom("memberships")
+          .select("organization_id")
+          .where("user_id", "=", user.id)
+          .where("status", "=", "active")
+          .executeTakeFirst();
+        user.organizationId = membership?.organization_id || "";
+      }
+      if (!user.organizationId) {
+        throw new UnauthorizedError("Organization context required");
+      }
+      (request as any).organizationId = user.organizationId;
+      return;
+    }
+
     if (!apiKey) {
       throw new ForbiddenError("API key required");
     }
@@ -136,10 +155,21 @@ export function requireScope(...requiredScopes: string[]) {
     if (!hasScope) {
       throw new ForbiddenError(`Required scope: ${requiredScopes.join(" or ")}`);
     }
+
+    (request as any).organizationId = apiKey.organizationId;
   };
 }
 
 export function requireOrganizationAccess(request: FastifyRequest, reply: FastifyReply): void {
+  if (
+    request.url === "/health" ||
+    request.url === "/ready" ||
+    request.url.startsWith("/docs") ||
+    request.url.startsWith("/api/v1/auth/")
+  ) {
+    return;
+  }
+
   const user = (request as any).user;
   const apiKey = (request as any).apiKey;
 

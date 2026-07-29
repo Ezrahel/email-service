@@ -89,7 +89,7 @@ module EmailPipeline
     end
 
     def extract_domain
-      @email.from_address.to_s.split("@").last || "email-service.local"
+      @email.from_address.to_s.split("@").last || "resendbyte.local"
     end
   end
 end

@@ -34,6 +34,10 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().email().optional(),
 
+  SMTP_GATEWAY_PORTS: z.string().default("587,2525"),
+  SMTP_TLS_KEY_PATH: z.string().optional(),
+  SMTP_TLS_CERT_PATH: z.string().optional(),
+
   MAILGUN_API_KEY: z.string().optional(),
   MAILGUN_DOMAIN: z.string().optional(),
   MAILGUN_BASE_URL: z.string().url().optional().or(z.literal("")),
@@ -56,6 +60,9 @@ const envSchema = z.object({
   S3_SECRET_KEY: z.string().optional(),
   S3_REGION: z.string().optional(),
 
+  // Tracking
+  PUBLIC_URL: z.string().url().default("http://localhost:3000"),
+
   // Observability
   OTEL_EXPORTER_EL_EXPORTER: z.enum(["none", "console", "otlp"]).default("none"),
   OTEL_ENDPOINT: z.string().url().optional().or(z.literal("")),
@@ -68,6 +75,13 @@ const envSchema = z.object({
   FF_ENABLE_WEBHOOKS: z.coerce.boolean().default(true),
   FF_ENABLE_BATCHING: z.coerce.boolean().default(true),
   FF_ENABLE_TEMPLATES: z.coerce.boolean().default(true),
+  FF_ENABLE_SMTP_GATEWAY: z.coerce.boolean().default(true),
+
+  ENCRYPTION_KEY: z.string().min(32).optional(),
+
+  // Billing / Paystack
+  PAYSTACK_SECRET_KEY: z.string().optional(),
+  PAYSTACK_PUBLIC_KEY: z.string().optional(),
 
   // Security
   CORS_ORIGIN: z.string().default("*"),

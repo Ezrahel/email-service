@@ -5,6 +5,7 @@ import { Clock, Send, CheckCheck, AlertCircle, Activity } from "lucide-react";
 
 const STATUS_CONFIG: Record<string, { variant: "success" | "warning" | "danger" | "info" | "neutral"; label: string }> = {
   queued: { variant: "warning", label: "Queued" },
+  scheduled: { variant: "info", label: "Scheduled" },
   sending: { variant: "info", label: "Sending" },
   delivered: { variant: "success", label: "Delivered" },
   bounced: { variant: "danger", label: "Bounced" },
@@ -12,10 +13,13 @@ const STATUS_CONFIG: Record<string, { variant: "success" | "warning" | "danger" 
   clicked: { variant: "success", label: "Clicked" },
   complained: { variant: "danger", label: "Complained" },
   failed: { variant: "danger", label: "Failed" },
+  cancelled: { variant: "neutral", label: "Cancelled" },
+  retrying: { variant: "warning", label: "Retrying" },
 };
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   queued: <Clock className="h-6 w-6" />,
+  scheduled: <Clock className="h-6 w-6" />,
   sending: <Send className="h-6 w-6" />,
   delivered: <CheckCheck className="h-6 w-6" />,
   bounced: <AlertCircle className="h-6 w-6" />,
@@ -23,6 +27,8 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
   clicked: <MousePointerIcon />,
   complained: <AlertCircle className="h-6 w-6" />,
   failed: <AlertCircle className="h-6 w-6" />,
+  cancelled: <AlertCircle className="h-6 w-6" />,
+  retrying: <Clock className="h-6 w-6" />,
 };
 
 function EyeIcon() {

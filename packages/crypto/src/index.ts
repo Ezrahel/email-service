@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
-import { env } from "@email-service/config";
-import { logger } from "@email-service/logger";
+import { env } from "@resendbyte/config";
+import { logger } from "@resendbyte/logger";
 import crypto from "crypto";
 
 export const auth = betterAuth({
@@ -42,10 +42,11 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.default.hash(password, 12);
 }
 
-export function generateAPIKey(): { prefix: string; fullKey: string; digest: string; lastChars: string } {
+export function generateAPIKey(environment?: string): { prefix: string; fullKey: string; digest: string; lastChars: string } {
+  const keyPrefix = environment === "sandbox" ? "sk_test_" : environment === "live" ? "sk_live_" : env.API_KEY_PREFIX;
   const randomPart = crypto.randomBytes(24).toString("hex");
-  const fullKey = `${env.API_KEY_PREFIX}${randomPart}`;
-  const prefix = `${env.API_KEY_PREFIX}${randomPart.slice(0, 4)}_`;
+  const fullKey = `${keyPrefix}${randomPart}`;
+  const prefix = `${keyPrefix}${randomPart.slice(0, 4)}_`;
   const digest = crypto.createHash("sha256").update(fullKey).digest("hex");
   const lastChars = fullKey.slice(-4);
   return { prefix, fullKey, digest, lastChars };
@@ -65,11 +66,12 @@ export function generateIdempotencyKey(): string {
 }
 
 export function generateWebhookSignature(payload: string, secret: string): string {
-  return crypto.createHash("sha256").update(secret + "." + payload).digest("hex");
+  return crypto.createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 export function verifyWebhookSignature(payload: string, secret: string, signature: string): boolean {
-  const expected = crypto.createHash("sha256").update(secret + "." + payload).digest("hex");
+  const expected = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+  if (expected.length !== signature.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(signature, "hex"));
 }
 
@@ -86,6 +88,47 @@ export function generateSecureToken(length: number = 32): string {
 
 export function hashString(input: string, algorithm: "sha256" | "sha512" = "sha256"): string {
   return crypto.createHash(algorithm).update(input).digest("hex");
+}
+
+function getEncryptionKey(): Buffer {
+  const key = env.ENCRYPTION_KEY || env.BETTER_AUTH_SECRET;
+  if (!env.ENCRYPTION_KEY) {
+    logger.warn("ENCRYPTION_KEY not set, using BETTER_AUTH_SECRET as fallback for webhook secret encryption");
+  }
+  return Buffer.from(key.slice(0, 32), "utf-8");
+}
+
+const ALGORITHM = "aes-256-gcm";
+
+export function encryptSecret(plaintext: string): string {
+  if (!plaintext) return "";
+  const key = getEncryptionKey();
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+  let encrypted = cipher.update(plaintext, "utf-8", "hex");
+  encrypted += cipher.final("hex");
+  const tag = cipher.getAuthTag().toString("hex");
+  return `${iv.toString("hex")}:${tag}:${encrypted}`;
+}
+
+export function decryptSecret(ciphertext: string): string {
+  if (!ciphertext || !ciphertext.includes(":")) return ciphertext;
+  try {
+    const key = getEncryptionKey();
+    const parts = ciphertext.split(":");
+    if (parts.length !== 3) return ciphertext;
+    const [ivHex, tagHex, encrypted] = parts;
+    const iv = Buffer.from(ivHex!, "hex");
+    const tag = Buffer.from(tagHex!, "hex");
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+    decipher.setAuthTag(tag);
+    let decrypted = decipher.update(encrypted!, "hex", "utf-8");
+    decrypted += decipher.final("utf-8");
+    return decrypted;
+  } catch {
+    logger.error({ ciphertextLength: ciphertext.length }, "Failed to decrypt webhook secret");
+    return "";
+  }
 }
 
 // JWT token generation and verification

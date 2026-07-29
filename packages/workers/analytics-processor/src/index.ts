@@ -1,6 +1,6 @@
-import { createWorker, QUEUE_NAMES, type AnalyticsRollupJob } from "@email-service/queue";
-import { db } from "@email-service/database";
-import { logger } from "@email-service/logger";
+import { createWorker, QUEUE_NAMES, type AnalyticsRollupJob } from "@resendbyte/queue";
+import { db } from "@resendbyte/database";
+import { logger } from "@resendbyte/logger";
 import { sql } from "kysely";
 
 async function rollupMetrics(job: { organizationId: string; granularity: "1m" | "5m" | "1h" | "1d"; date: string }): Promise<void> {

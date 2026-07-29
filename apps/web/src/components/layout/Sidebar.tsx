@@ -10,6 +10,8 @@ import {
   Globe,
   Webhook,
   Key,
+  Ban,
+  CreditCard,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -26,6 +28,8 @@ const navItems = [
   { label: "Domains", href: "/domains", icon: Globe },
   { label: "Webhooks", href: "/webhooks", icon: Webhook },
   { label: "API Keys", href: "/api-keys", icon: Key },
+  { label: "Suppressions", href: "/suppressions", icon: Ban },
+  { label: "Billing", href: "/billing", icon: CreditCard },
 ];
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {

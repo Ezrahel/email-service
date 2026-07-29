@@ -12,7 +12,7 @@ concurrency:
 
 env:
   RAILS_ENV: test
-  DATABASE_URL: postgres://postgres:postgres@localhost:5432/email_service_test
+  DATABASE_URL: postgres://postgres:postgres@localhost:5432/resendbyte_test
   REDIS_URL: redis://localhost:6379/0
   REDIS_SIDEKIQ_URL: redis://localhost:6379/1
   JWT_SECRET: test-secret
@@ -41,7 +41,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: email_service_test
+          POSTGRES_DB: resendbyte_test
         ports:
           - 5432:5432
         options: >-
@@ -98,8 +98,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ vars.CONTAINER_REGISTRY }}/email-service:${{ github.sha }}
-            ${{ vars.CONTAINER_REGISTRY }}/email-service:latest
+            ${{ vars.CONTAINER_REGISTRY }}/resendbyte:${{ github.sha }}
+            ${{ vars.CONTAINER_REGISTRY }}/resendbyte:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -114,11 +114,11 @@ jobs:
         uses: azure/setup-kubectl@v4
       - name: Deploy to staging
         run: |
-          kubectl set image deployment/email-service-api \
-            api=${{ vars.CONTAINER_REGISTRY }}/email-service:${{ github.sha }} \
-            --namespace=email-service
-          kubectl set image deployment/email-service-sidekiq \
-            sidekiq=${{ vars.CONTAINER_REGISTRY }}/email-service:${{ github.sha }} \
-            --namespace=email-service
-          kubectl rollout status deployment/email-service-api --namespace=email-service --timeout=5m
-          kubectl rollout status deployment/email-service-sidekiq --namespace=email-service --timeout=5m
+          kubectl set image deployment/resendbyte-api \
+            api=${{ vars.CONTAINER_REGISTRY }}/resendbyte:${{ github.sha }} \
+            --namespace=resendbyte
+          kubectl set image deployment/resendbyte-sidekiq \
+            sidekiq=${{ vars.CONTAINER_REGISTRY }}/resendbyte:${{ github.sha }} \
+            --namespace=resendbyte
+          kubectl rollout status deployment/resendbyte-api --namespace=resendbyte --timeout=5m
+          kubectl rollout status deployment/resendbyte-sidekiq --namespace=resendbyte --timeout=5m

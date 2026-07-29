@@ -1,5 +1,5 @@
-import { db } from "@email-service/database";
-import { ValidationError, ConflictError, NotFoundError } from "@email-service/errors";
+import { db } from "@resendbyte/database";
+import { ValidationError, ConflictError, NotFoundError } from "@resendbyte/errors";
 import crypto from "node:crypto";
 
 export interface DomainResult {

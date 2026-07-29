@@ -1,8 +1,8 @@
-import { Kysely, PostgresDialect } from "kysely";
+import { Kysely, PostgresDialect, sql } from "kysely";
 import pg from "pg";
 import type { DB } from "./types.js";
-import { env } from "@email-service/config";
-import { logger } from "@email-service/logger";
+import { env } from "@resendbyte/config";
+import { logger } from "@resendbyte/logger";
 
 const { Pool } = pg;
 
@@ -13,9 +13,11 @@ const dialect = new PostgresDialect({
     statement_timeout: env.DATABASE_STATEMENT_TIMEOUT,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
-    application_name: "email-service",
+    application_name: "resendbyte",
   }),
 });
+
+export { sql };
 
 export const db = new Kysely<DB>({
   dialect,

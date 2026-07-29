@@ -13,6 +13,9 @@ export interface Organization {
   monthly_email_limit: number;
   emails_sent_this_month: number;
   month_start_date: Date;
+  plan_id: string | null;
+  overage_enabled: boolean;
+  suspended_at: Date | null;
   status: string;
   created_at: Date;
   updated_at: Date;
@@ -176,6 +179,7 @@ export interface EmailMessage {
   message_id: string | null;
   retry_count: number;
   max_retries: number;
+  environment: string;
   scheduled_at: Date | null;
   sent_at: Date | null;
   delivered_at: Date | null;
@@ -206,7 +210,7 @@ export interface ProviderConfig {
 
 export interface Attachment {
   id: string;
-  email_message_id: string;
+  email_message_id: string | null;
   filename: string;
   content_type: string;
   size_bytes: number;
@@ -438,6 +442,62 @@ export interface ProviderCost {
   updated_at: Date;
 }
 
+export interface Suppression {
+  id: string;
+  organization_id: string;
+  email: string;
+  reason: string;
+  source: string;
+  created_at: Date;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  monthly_email_limit: number;
+  price_cents: number;
+  overage_rate_cents: number;
+  features: Record<string, unknown>;
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Subscription {
+  id: string;
+  organization_id: string;
+  plan_id: string;
+  status: string;
+  period_start: Date;
+  period_end: Date;
+  cancel_at_period_end: boolean;
+  stripe_subscription_id: string | null;
+  paystack_subscription_code: string | null;
+  paystack_authorization_code: string | null;
+  overage_balance_cents: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Invoice {
+  id: string;
+  organization_id: string;
+  subscription_id: string | null;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  description: string | null;
+  period_start: Date | null;
+  period_end: Date | null;
+  paid_at: Date | null;
+  paystack_reference: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface RetentionPolicy {
   id: string;
   organization_id: string | null;
@@ -526,4 +586,8 @@ export interface DB {
   rollup_1m: Rollup1m;
   rollup_5m: Rollup5m;
   rollup_daily_domain: RollupDailyDomain;
+  suppressions: Suppression;
+  plans: Plan;
+  subscriptions: Subscription;
+  invoices: Invoice;
 }

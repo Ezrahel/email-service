@@ -1,5 +1,5 @@
-import type { SendEmailMessage, ProviderAdapterConfig, ProviderResponse } from "@email-service/types";
-import type { ProviderType } from "@email-service/types";
+import type { SendEmailMessage, ProviderAdapterConfig, ProviderResponse } from "@resendbyte/types";
+import type { ProviderType } from "@resendbyte/types";
 
 export interface ProviderAdapter {
   readonly type: ProviderType;
@@ -36,7 +36,7 @@ export abstract class BaseProviderAdapter implements ProviderAdapter {
   }
 
   protected generateMessageId(): string {
-    return `<${Date.now()}.${Math.random().toString(36).substring(2, 15)}@email-service>`;
+    return `<${Date.now()}.${Math.random().toString(36).substring(2, 15)}@resendbyte>`;
   }
 
   protected formatEmailAddresses(emails: Array<{ email: string; name?: string }>): string {

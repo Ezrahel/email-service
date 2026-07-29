@@ -1,5 +1,5 @@
 {
-  "name": "@email-service/logger",
+  "name": "@resendbyte/logger",
   "type": "module",
   "version": "0.2.0",
   "private": true,
@@ -22,10 +22,10 @@
   "dependencies": {
     "pino": "^9.0.0",
     "pino-pretty": "^11.0.0",
-    "@email-service/config": "workspace:*"
+    "@resendbyte/config": "workspace:*"
   },
   "devDependencies": {
-    "@email-service/tsconfig": "workspace:*",
+    "@resendbyte/tsconfig": "workspace:*",
     "@types/node": "^20.14.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"

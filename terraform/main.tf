@@ -13,7 +13,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "email-service-terraform-state"
+    bucket = "resendbyte-terraform-state"
     key    = "terraform.tfstate"
     region = "us-east-1"
   }
@@ -28,7 +28,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
-  name = "${var.environment}-email-service-vpc"
+  name = "${var.environment}-resendbyte-vpc"
   cidr = var.vpc_cidr
 
   azs             = var.availability_zones
@@ -40,19 +40,19 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = { Environment = var.environment, Service = "email-service" }
+  tags = { Environment = var.environment, Service = "resendbyte" }
 }
 
 # ── ECS Cluster ──────────────────────────────────────────────
 resource "aws_ecs_cluster" "main" {
-  name = "${var.environment}-email-service"
+  name = "${var.environment}-resendbyte"
 
   setting {
     name  = "containerInsights"
     value = "enabled"
   }
 
-  tags = { Environment = var.environment, Service = "email-service" }
+  tags = { Environment = var.environment, Service = "resendbyte" }
 }
 
 # ── RDS PostgreSQL ───────────────────────────────────────────
@@ -60,7 +60,7 @@ module "rds" {
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 6.0"
 
-  identifier = "${var.environment}-email-service-db"
+  identifier = "${var.environment}-resendbyte-db"
 
   engine               = "postgres"
   engine_version       = "16"
@@ -72,7 +72,7 @@ module "rds" {
   max_allocated_storage = var.db_max_allocated_storage
   storage_encrypted     = true
 
-  db_name  = "email_service"
+  db_name  = "resendbyte"
   username = var.db_username
   password = random_password.db_password.result
 
@@ -86,7 +86,7 @@ module "rds" {
 
   deletion_protection = var.environment == "production"
 
-  tags = { Environment = var.environment, Service = "email-service" }
+  tags = { Environment = var.environment, Service = "resendbyte" }
 }
 
 resource "random_password" "db_password" {
@@ -96,7 +96,7 @@ resource "random_password" "db_password" {
 
 # ── ElastiCache Redis ────────────────────────────────────────
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id = "${var.environment}-email-service-redis"
+  replication_group_id = "${var.environment}-resendbyte-redis"
   description          = "Redis for Email Service"
 
   node_type            = var.redis_node_type
@@ -114,19 +114,19 @@ resource "aws_elasticache_replication_group" "redis" {
   at_rest_encryption_enabled  = true
   transit_encryption_enabled  = true
 
-  tags = { Environment = var.environment, Service = "email-service" }
+  tags = { Environment = var.environment, Service = "resendbyte" }
 }
 
 resource "aws_elasticache_subnet_group" "redis" {
-  name       = "${var.environment}-email-service-redis-subnet"
+  name       = "${var.environment}-resendbyte-redis-subnet"
   subnet_ids = module.vpc.private_subnets
 }
 
 # ── S3 ───────────────────────────────────────────────────────
 resource "aws_s3_bucket" "storage" {
-  bucket = "${var.environment}-email-service-storage"
+  bucket = "${var.environment}-resendbyte-storage"
 
-  tags = { Environment = var.environment, Service = "email-service" }
+  tags = { Environment = var.environment, Service = "resendbyte" }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "storage" {
@@ -158,7 +158,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "storage" {
 
 # ── Security Groups ──────────────────────────────────────────
 resource "aws_security_group" "rds" {
-  name        = "${var.environment}-email-service-rds"
+  name        = "${var.environment}-resendbyte-rds"
   description = "RDS PostgreSQL"
   vpc_id      = module.vpc.vpc_id
 
@@ -171,7 +171,7 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_security_group" "redis" {
-  name        = "${var.environment}-email-service-redis"
+  name        = "${var.environment}-resendbyte-redis"
   description = "Redis"
   vpc_id      = module.vpc.vpc_id
 
@@ -184,7 +184,7 @@ resource "aws_security_group" "redis" {
 }
 
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.environment}-email-service-ecs-tasks"
+  name        = "${var.environment}-resendbyte-ecs-tasks"
   description = "ECS tasks"
   vpc_id      = module.vpc.vpc_id
 
@@ -198,7 +198,7 @@ resource "aws_security_group" "ecs_tasks" {
 
 # ── IAM ──────────────────────────────────────────────────────
 resource "aws_iam_role" "ecs_execution" {
-  name = "${var.environment}-email-service-ecs-execution"
+  name = "${var.environment}-resendbyte-ecs-execution"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -216,7 +216,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 }
 
 resource "aws_iam_role" "ecs_task" {
-  name = "${var.environment}-email-service-ecs-task"
+  name = "${var.environment}-resendbyte-ecs-task"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -229,7 +229,7 @@ resource "aws_iam_role" "ecs_task" {
 }
 
 resource "aws_iam_policy" "ecs_task" {
-  name = "${var.environment}-email-service-ecs-task-policy"
+  name = "${var.environment}-resendbyte-ecs-task-policy"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -263,6 +263,6 @@ resource "aws_iam_role_policy_attachment" "ecs_task" {
 
 # ── CloudWatch ───────────────────────────────────────────────
 resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/${var.environment}-email-service"
+  name              = "/ecs/${var.environment}-resendbyte"
   retention_in_days = 90
 }

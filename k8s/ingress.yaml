@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: email-service-api
-  namespace: email-service
+  name: resendbyte-api
+  namespace: resendbyte
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
@@ -13,7 +13,7 @@ spec:
   tls:
     - hosts:
         - api.example.com
-      secretName: email-service-tls
+      secretName: resendbyte-tls
   rules:
     - host: api.example.com
       http:
@@ -22,6 +22,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: email-service-api
+                name: resendbyte-api
                 port:
                   number: 80

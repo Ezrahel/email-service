@@ -6,3 +6,7 @@ export { TemplateService } from "./services/TemplateService.js";
 export { WebhookService } from "./services/WebhookService.js";
 export { AnalyticsService } from "./services/AnalyticsService.js";
 export { OrganizationService } from "./services/OrganizationService.js";
+export { SuppressionService } from "./services/SuppressionService.js";
+export { StorageService } from "./services/StorageService.js";
+export { BillingService } from "./services/BillingService.js";
+export { AuditService } from "./services/AuditService.js";

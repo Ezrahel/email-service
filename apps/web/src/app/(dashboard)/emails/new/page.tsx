@@ -6,8 +6,9 @@ import { api } from "@/lib/api";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowLeft, Send, MailCheck, Shield } from "lucide-react";
+import { ArrowLeft, Send, MailCheck, Shield, Paperclip, Clock, X } from "lucide-react";
 
 export default function ComposeEmailPage() {
   const router = useRouter();
@@ -19,6 +20,9 @@ export default function ComposeEmailPage() {
   const [tags, setTags] = useState("");
   const [html, setHtml] = useState("");
   const [text, setText] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [attaching, setAttaching] = useState(false);
   const [sending, setSending] = useState(false);
   const [validating, setValidating] = useState(false);
 
@@ -33,7 +37,25 @@ export default function ComposeEmailPage() {
       ? tags.split(",").map((s) => s.trim()).filter(Boolean)
       : undefined,
     idempotencyKey: crypto.randomUUID(),
+    scheduledAt: scheduledAt || undefined,
+    attachmentIds: attachmentIds.length > 0 ? attachmentIds : undefined,
   });
+
+  const handleAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAttaching(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res: any = await api.post("/attachments", formData);
+      setAttachmentIds((prev) => [...prev, res.id]);
+    } catch (err: any) {
+      toast({ type: "error", title: "Upload failed", message: err.message });
+    } finally {
+      setAttaching(false);
+    }
+  };
 
   const handleSend = async () => {
     setSending(true);
@@ -110,6 +132,50 @@ export default function ComposeEmailPage() {
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Schedule Send (optional)"
+            type="datetime-local"
+            value={scheduledAt}
+            onChange={(e) => setScheduledAt(e.target.value)}
+          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-medium text-text-secondary">Attachments</label>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={attaching}
+                icon={<Paperclip className="h-4 w-4" />}
+                onClick={() => document.getElementById("file-upload")?.click()}
+              >
+                Upload
+              </Button>
+              <input
+                id="file-upload"
+                type="file"
+                className="hidden"
+                onChange={handleAttach}
+              />
+            </div>
+            {attachmentIds.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {attachmentIds.map((id) => (
+                  <Badge key={id} variant="info" className="flex items-center gap-1">
+                    Attached
+                    <button
+                      onClick={() => setAttachmentIds((prev) => prev.filter((x) => x !== id))}
+                      className="hover:text-danger transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 pt-2">

@@ -1,7 +1,7 @@
 import { Queue, type QueueOptions, Job, type JobsOptions, Worker, type WorkerOptions, JobScheduler } from "bullmq";
-import { env } from "@email-service/config";
-import { logger } from "@email-service/logger";
-import { InternalError } from "@email-service/errors";
+import { env } from "@resendbyte/config";
+import { logger } from "@resendbyte/logger";
+import { InternalError } from "@resendbyte/errors";
 
 const connection = {
   host: new URL(env.REDIS_URL).hostname,
@@ -39,6 +39,7 @@ interface BaseJobData {
 export interface EmailSubmissionJob extends BaseJobData {
   emailMessageId: string;
   organizationId: string;
+  environment?: string;
 }
 
 export interface EmailBatchJob extends BaseJobData {

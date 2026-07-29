@@ -1,8 +1,8 @@
 import { Resource } from "@opentelemetry/resources";
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 import { Registry, Counter, Gauge, Histogram, Summary } from "prom-client";
-import { env } from "@email-service/config";
-import { logger } from "@email-service/logger";
+import { env } from "@resendbyte/config";
+import { logger } from "@resendbyte/logger";
 
 const registry = new Registry();
 
@@ -16,7 +16,7 @@ export interface TelemetryConfig {
 }
 
 export const telemetryConfig = {
-  serviceName: "email-service",
+  serviceName: "resendbyte",
   serviceVersion: process.env["npm_package_version"] ?? "0.2.0",
   environment: env.NODE_ENV,
   otlpEndpoint: env.OTEL_ENDPOINT,
@@ -26,7 +26,7 @@ export const telemetryConfig = {
 
 function createResource(): Resource {
   return new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: "email-service",
+    [SemanticResourceAttributes.SERVICE_NAME]: "resendbyte",
     [SemanticResourceAttributes.SERVICE_VERSION]: process.env["npm_package_version"] ?? "0.2.0",
     [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: env.NODE_ENV,
   });

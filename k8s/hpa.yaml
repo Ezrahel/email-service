@@ -1,13 +1,13 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: email-service-api
-  namespace: email-service
+  name: resendbyte-api
+  namespace: resendbyte
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: email-service-api
+    name: resendbyte-api
   minReplicas: 3
   maxReplicas: 20
   metrics:
@@ -27,13 +27,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: email-service-sidekiq
-  namespace: email-service
+  name: resendbyte-sidekiq
+  namespace: resendbyte
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: email-service-sidekiq
+    name: resendbyte-sidekiq
   minReplicas: 2
   maxReplicas: 15
   metrics:

@@ -1,6 +1,6 @@
-import { db } from "@email-service/database";
+import { db } from "@resendbyte/database";
 import { sql } from "kysely";
-import { NotFoundError } from "@email-service/errors";
+import { NotFoundError } from "@resendbyte/errors";
 import crypto from "node:crypto";
 
 export interface CreateTemplateInput {

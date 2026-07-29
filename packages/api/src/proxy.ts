@@ -1,7 +1,7 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import crypto from "crypto";
-import { env } from "@email-service/config";
-import { logger } from "@email-service/logger";
+import { env } from "@resendbyte/config";
+import { logger } from "@resendbyte/logger";
 
 interface ProxyOptions {
   timeout?: number;

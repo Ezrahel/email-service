@@ -11,9 +11,10 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { useToast } from "@/components/ui/Toast";
-import { Plus, Key, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Key, Trash2, AlertTriangle, Server } from "lucide-react";
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "-";
@@ -27,9 +28,17 @@ interface ApiKey {
   key_last_chars: string;
   scopes: string[];
   status: string;
+  environment?: string;
   expires_at: string | null;
   last_used_at: string | null;
   created_at: string;
+}
+
+function environmentFromKey(key: ApiKey): string {
+  if (key.key_prefix.startsWith("sk_test_")) return "sandbox";
+  if (key.key_prefix.startsWith("sk_live_")) return "live";
+  if (key.environment) return key.environment;
+  return "live";
 }
 
 export default function ApiKeysPage() {
@@ -42,6 +51,7 @@ export default function ApiKeysPage() {
   const [keyName, setKeyName] = useState("");
   const [keyScopes, setKeyScopes] = useState<string[]>([...SCOPE_IDS]);
   const [keyExpiry, setKeyExpiry] = useState("");
+  const [keyEnvironment, setKeyEnvironment] = useState("live");
   const [creating, setCreating] = useState(false);
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
@@ -73,6 +83,7 @@ export default function ApiKeysPage() {
     setKeyName("");
     setKeyScopes([...SCOPE_IDS]);
     setKeyExpiry("");
+    setKeyEnvironment("live");
     setCreatedKey(null);
     setCreateOpen(true);
   };
@@ -89,6 +100,7 @@ export default function ApiKeysPage() {
         name: keyName.trim(),
         scopes: keyScopes,
         expiresAt: keyExpiry || undefined,
+        environment: keyEnvironment,
       });
       setCreatedKey(res.key || res.api_key || (res as any).key);
       toast({ type: "success", title: "API key created" });
@@ -121,7 +133,9 @@ export default function ApiKeysPage() {
     setCreatedKey(null);
   };
 
-  const renderCard = (key: ApiKey) => (
+  const renderCard = (key: ApiKey) => {
+    const env = environmentFromKey(key);
+    return (
     <div key={key.id} className="glass p-5 animate-fade-in">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3 min-w-0">
@@ -135,6 +149,7 @@ export default function ApiKeysPage() {
               <Badge variant={key.status === "active" ? "success" : "danger"} dot>
                 {key.status}
               </Badge>
+              <Badge variant={env === "sandbox" ? "warning" : "info"}>{env}</Badge>
               {key.scopes.map((scope) => (
                 <Badge key={scope} variant="info">{scope}</Badge>
               ))}
@@ -156,7 +171,8 @@ export default function ApiKeysPage() {
         </Button>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <PageShell
@@ -173,6 +189,35 @@ export default function ApiKeysPage() {
           <Button variant="ghost" size="sm" onClick={fetchKeys}>Retry</Button>
         </div>
       )}
+
+      <div className="glass p-5 mb-6">
+        <div className="flex items-center gap-3 mb-3">
+          <Server className="h-5 w-5 text-text-secondary" />
+          <h3 className="text-[15px] font-semibold text-text-primary">SMTP Connection</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-[14px]">
+          <div>
+            <p className="text-text-tertiary text-[12px] mb-0.5">Host</p>
+            <p className="text-text-primary font-mono">{typeof window !== "undefined" ? window.location.hostname : "localhost"}:587</p>
+          </div>
+          <div>
+            <p className="text-text-tertiary text-[12px] mb-0.5">Ports</p>
+            <p className="text-text-primary font-mono">587 (STARTTLS), 2525</p>
+          </div>
+          <div>
+            <p className="text-text-tertiary text-[12px] mb-0.5">Username</p>
+            <p className="text-text-primary font-mono">API Key ID</p>
+          </div>
+          <div>
+            <p className="text-text-tertiary text-[12px] mb-0.5">Password</p>
+            <p className="text-text-primary font-mono">API Key Secret</p>
+          </div>
+        </div>
+        <p className="text-[12px] text-text-tertiary mt-3">
+          Use any API key with the <code className="text-accent">email:send</code> scope for SMTP authentication.
+          The username is the API key ID, and the password is the full API key.
+        </p>
+      </div>
 
       {loading ? (
         <div className="flex flex-col gap-4">
@@ -235,7 +280,16 @@ export default function ApiKeysPage() {
                 ))}
               </div>
             </div>
-            <Input label="Expires At (optional)" type="date" value={keyExpiry} onChange={(e) => setKeyExpiry(e.target.value)} />
+            <Select
+              label="Environment"
+              options={[
+                { value: "live", label: "Live" },
+                { value: "sandbox", label: "Sandbox" },
+              ]}
+              value={keyEnvironment}
+              onChange={(v) => setKeyEnvironment(v)}
+            />
+            <Input label="Expires At (optional)" type="datetime-local" value={keyExpiry} onChange={(e) => setKeyExpiry(e.target.value)} />
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button variant="secondary" onClick={resetCreate}>Cancel</Button>
               <Button onClick={handleCreateStep1}>Next</Button>

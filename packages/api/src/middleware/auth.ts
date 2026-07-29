@@ -1,8 +1,8 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { verifyAccessToken, verifyAPIKey } from "@email-service/crypto";
-import { UnauthorizedError, ForbiddenError } from "@email-service/errors";
-import { logger } from "@email-service/logger";
-import { db } from "@email-service/database";
+import { verifyAccessToken, verifyAPIKey } from "@resendbyte/crypto";
+import { UnauthorizedError, ForbiddenError } from "@resendbyte/errors";
+import { logger } from "@resendbyte/logger";
+import { db } from "@resendbyte/database";
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: {
@@ -14,6 +14,7 @@ export interface AuthenticatedRequest extends FastifyRequest {
     id: string;
     organizationId: string;
     scopes: string[];
+    environment?: string;
   };
 }
 
@@ -67,13 +68,23 @@ async function validateSession(token: string, request: FastifyRequest): Promise<
   }
 }
 
+function detectKeyEnvironment(key: string): { prefix: string; environment: string } | null {
+  const sandboxMatch = key.match(/^(sk_test_[a-f0-9]{4}_)/);
+  if (sandboxMatch) return { prefix: sandboxMatch[1]!, environment: "sandbox" };
+  const liveMatch = key.match(/^(sk_live_[a-f0-9]{4}_)/);
+  if (liveMatch) return { prefix: liveMatch[1]!, environment: "live" };
+  const legacyMatch = key.match(/^(em_[a-f0-9]{4}_)/);
+  if (legacyMatch) return { prefix: legacyMatch[1]!, environment: "live" };
+  return null;
+}
+
 async function validateAPIKey(key: string, request: FastifyRequest): Promise<void> {
-  const prefixMatch = key.match(/^(em_[a-f0-9]{4}_)/);
-  if (!prefixMatch) {
+  const detected = detectKeyEnvironment(key);
+  if (!detected) {
     throw new UnauthorizedError("Invalid API key format");
   }
 
-  const prefix = prefixMatch[1]!;
+  const { prefix, environment } = detected;
   const apiKey = await db
     .selectFrom("api_keys")
     .select(["id", "organization_id", "key_digest", "key_last_chars", "scopes", "allowed_ips", "status", "expires_at"])
@@ -120,6 +131,7 @@ async function validateAPIKey(key: string, request: FastifyRequest): Promise<voi
     id: apiKey.id,
     organizationId: apiKey.organization_id,
     scopes: apiKey.scopes || [],
+    environment,
   };
 }
 
@@ -144,6 +156,7 @@ export function requireScope(...requiredScopes: string[]) {
         throw new UnauthorizedError("Organization context required");
       }
       (request as any).organizationId = user.organizationId;
+      (request as any).environment = "live";
       return;
     }
 
@@ -157,6 +170,7 @@ export function requireScope(...requiredScopes: string[]) {
     }
 
     (request as any).organizationId = apiKey.organizationId;
+    (request as any).environment = apiKey.environment || "live";
   };
 }
 

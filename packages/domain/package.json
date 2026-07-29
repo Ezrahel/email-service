@@ -1,5 +1,5 @@
 {
-  "name": "@email-service/domain",
+  "name": "@resendbyte/domain",
   "type": "module",
   "version": "0.2.0",
   "private": true,
@@ -18,17 +18,21 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1096.0",
     "@aws-sdk/client-ses": "^3.1089.0",
-    "@email-service/crypto": "workspace:*",
-    "@email-service/database": "workspace:*",
-    "@email-service/errors": "workspace:*",
-    "@email-service/logger": "workspace:*",
+    "@aws-sdk/s3-request-presigner": "^3.1096.0",
+    "@resendbyte/config": "workspace:*",
+    "@resendbyte/crypto": "workspace:*",
+    "@resendbyte/database": "workspace:*",
+    "@resendbyte/errors": "workspace:*",
+    "@resendbyte/logger": "workspace:*",
+    "@resendbyte/queue": "workspace:*",
+    "@resendbyte/types": "workspace:*",
     "kysely": "^0.27.0",
-    "@email-service/types": "workspace:*",
     "nodemailer": "^9.0.3"
   },
   "devDependencies": {
-    "@email-service/tsconfig": "workspace:*",
+    "@resendbyte/tsconfig": "workspace:*",
     "@types/node": "^20.14.0",
     "@types/nodemailer": "^8.0.1",
     "typescript": "^5.5.0",

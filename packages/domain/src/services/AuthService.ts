@@ -1,7 +1,7 @@
-import { db } from "@email-service/database";
-import { logger } from "@email-service/logger";
-import { UnauthorizedError, ForbiddenError, NotFoundError, ConflictError } from "@email-service/errors";
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken as verifyRefresh, verifyPassword, generateAPIKey } from "@email-service/crypto";
+import { db } from "@resendbyte/database";
+import { logger } from "@resendbyte/logger";
+import { UnauthorizedError, ForbiddenError, NotFoundError, ConflictError } from "@resendbyte/errors";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken as verifyRefresh, verifyPassword, generateAPIKey } from "@resendbyte/crypto";
 import crypto from "node:crypto";
 
 export interface LoginResult {
@@ -42,8 +42,8 @@ export class AuthService {
     return { token, refreshToken: newRefreshToken, expiresAt };
   }
 
-  async createAPIKey(organizationId: string, userId: string | undefined, name: string, scopes: string[], expiresAt?: string, allowedIPs?: string[]): Promise<APIKeyResult> {
-    const { prefix, fullKey, digest, lastChars } = await generateAPIKey();
+  async createAPIKey(organizationId: string, userId: string | undefined, name: string, scopes: string[], expiresAt?: string, allowedIPs?: string[], environment?: string): Promise<APIKeyResult> {
+    const { prefix, fullKey, digest, lastChars } = generateAPIKey(environment);
     await db.insertInto("api_keys").values({
       id: crypto.randomUUID(), organization_id: organizationId, user_id: userId ?? null,
       name, key_prefix: prefix!, key_digest: digest!, key_last_chars: lastChars!,

@@ -1,5 +1,5 @@
 {
-  "name": "@email-service/types",
+  "name": "@resendbyte/types",
   "type": "module",
   "version": "0.2.0",
   "private": true,
@@ -24,7 +24,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@email-service/tsconfig": "workspace:*",
+    "@resendbyte/tsconfig": "workspace:*",
     "@types/node": "^20.14.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"

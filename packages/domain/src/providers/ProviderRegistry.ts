@@ -1,11 +1,11 @@
-import type { ProviderAdapterConfig, ProviderType, ProviderHealth, SendEmailMessage, ProviderResponse } from "@email-service/types";
+import type { ProviderAdapterConfig, ProviderType, ProviderHealth, SendEmailMessage, ProviderResponse } from "@resendbyte/types";
 import { SmtpAdapter } from "./SmtpAdapter.js";
 import { SendGridAdapter } from "./SendGridAdapter.js";
 import { MailgunAdapter } from "./MailgunAdapter.js";
 import { SESAdapter } from "./SESAdapter.js";
 import { PostmarkAdapter } from "./PostmarkAdapter.js";
 import { type ProviderAdapter } from "./ProviderAdapter.js";
-import { logger } from "@email-service/logger";
+import { logger } from "@resendbyte/logger";
 
 export interface ProviderRegistryOptions {
   healthCheckInterval?: number;

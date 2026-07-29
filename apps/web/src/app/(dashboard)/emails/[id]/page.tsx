@@ -11,7 +11,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { DeliveryTimeline } from "@/components/emails/DeliveryTimeline";
 import { EmailStatusBadge } from "@/components/emails/EmailStatusBadge";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, XCircle, Paperclip } from "lucide-react";
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString();
@@ -36,8 +36,12 @@ interface EmailData {
   html_body: string;
   text_body: string;
   tags: string[];
+  environment?: string;
+  scheduled_at?: string;
   created_at: string;
   deliveries: Delivery[];
+  attachments?: Array<{ id: string; filename: string; content_type: string; size: number }>;
+  metrics?: { is_opened?: boolean; is_clicked?: boolean; is_complained?: boolean; open_count?: number; click_count?: number };
 }
 
 export default function EmailDetailPage() {
@@ -48,6 +52,7 @@ export default function EmailDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("html");
+  const [cancelling, setCancelling] = useState(false);
 
   const fetchEmail = async () => {
     setLoading(true);
@@ -59,6 +64,19 @@ export default function EmailDetailPage() {
       setError(e.message || "Email not found");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      await api.post(`/emails/${params.id}/cancel`);
+      toast({ type: "success", title: "Email cancelled" });
+      fetchEmail();
+    } catch (e: any) {
+      toast({ type: "error", title: "Failed to cancel", message: e.message });
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -95,12 +113,24 @@ export default function EmailDetailPage() {
   return (
     <PageShell
       title="Email Detail"
-      actions={<Button variant="ghost" onClick={() => router.push("/emails")} icon={<ArrowLeft className="h-4 w-4" />}>Back</Button>}
+      actions={
+        <div className="flex items-center gap-2">
+          {data.status === "scheduled" && (
+            <Button variant="danger" size="sm" loading={cancelling} onClick={handleCancel} icon={<XCircle className="h-4 w-4" />}>
+              Cancel Send
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => router.push("/emails")} icon={<ArrowLeft className="h-4 w-4" />}>Back</Button>
+        </div>
+      }
     >
       <div className="flex flex-col gap-5 max-w-4xl">
-        <EmailStatusBadge status={data.status} />
+        <div className="flex items-center gap-3">
+          <EmailStatusBadge status={data.status} />
+          {data.environment === "sandbox" && <Badge variant="warning">Sandbox</Badge>}
+        </div>
         <div className="flex items-center gap-2 text-[14px] text-text-secondary -mt-3">
-          <span>{formatDate(data.created_at)}</span>
+          <span>{data.scheduled_at ? `Scheduled: ${formatDate(data.scheduled_at)}` : formatDate(data.created_at)}</span>
         </div>
 
         <div className="glass p-5 grid grid-cols-2 gap-4">
@@ -132,31 +162,61 @@ export default function EmailDetailPage() {
           )}
         </div>
 
-        <DeliveryTimeline deliveries={data.deliveries} status={data.status} />
+        <DeliveryTimeline deliveries={data.deliveries} status={data.status} metrics={data.metrics} scheduledAt={data.scheduled_at} />
 
-        {data.deliveries && data.deliveries.length > 0 && (
+        {data.metrics && (data.metrics.open_count !== undefined || data.metrics.click_count !== undefined) && (
           <div className="glass p-5">
-            <h3 className="text-[15px] font-semibold text-text-primary mb-4">Delivery Details</h3>
-            <div className="flex flex-col gap-3">
-              {data.deliveries.map((d) => (
-                <div key={d.id} className="glass-sm p-4 grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-[13px] text-text-tertiary mb-0.5">Provider</p>
-                    <p className="text-[15px] text-text-primary font-medium">{d.provider}</p>
+            <h3 className="text-[15px] font-semibold text-text-primary mb-4">Tracking Stats</h3>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                  <span className="text-accent text-lg font-bold">{data.metrics.open_count ?? 0}</span>
+                </div>
+                <div>
+                  <p className="text-[13px] text-text-tertiary">Opens</p>
+                  <p className="text-[15px] font-medium text-text-primary">{data.metrics.is_opened ? "Opened" : "Not opened"}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                  <span className="text-accent text-lg font-bold">{data.metrics.click_count ?? 0}</span>
+                </div>
+                <div>
+                  <p className="text-[13px] text-text-tertiary">Clicks</p>
+                  <p className="text-[15px] font-medium text-text-primary">{data.metrics.is_clicked ? "Clicked" : "Not clicked"}</p>
+                </div>
+              </div>
+              {data.metrics.is_complained && (
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
+                    <span className="text-danger text-lg font-bold">!</span>
                   </div>
                   <div>
-                    <p className="text-[13px] text-text-tertiary mb-0.5">Attempts</p>
-                    <p className="text-[15px] text-text-primary">{d.attempts}</p>
+                    <p className="text-[13px] text-text-tertiary">Complaint</p>
+                    <p className="text-[15px] font-medium text-danger">Complained</p>
                   </div>
-                  <div>
-                    <p className="text-[13px] text-text-tertiary mb-0.5">Response Code</p>
-                    <p className="text-[15px] text-text-primary font-mono">{d.response_code || "-"}</p>
-                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {data.attachments && data.attachments.length > 0 && (
+          <div className="glass p-5">
+            <h3 className="text-[15px] font-semibold text-text-primary mb-4">Attachments</h3>
+            <div className="flex flex-col gap-2">
+              {data.attachments.map((a) => (
+                <div key={a.id} className="flex items-center gap-3 glass-sm px-4 py-2.5 rounded-lg">
+                  <Paperclip className="h-4 w-4 text-text-tertiary" />
+                  <span className="text-[14px] text-text-primary flex-1">{a.filename}</span>
+                  <span className="text-[12px] text-text-tertiary">{(a.size / 1024).toFixed(1)} KB</span>
                 </div>
               ))}
             </div>
           </div>
         )}
+
+
 
         <div className="glass p-5">
           <Tabs

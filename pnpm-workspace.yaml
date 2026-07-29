@@ -1,6 +1,8 @@
 packages:
   - "packages/*"
   - "packages/workers/*"
+  - "packages/gateways/*"
   - "packages/apps/*"
   - "packages/tools/*"
+  - "packages/sdks/*"
   - "apps/*"

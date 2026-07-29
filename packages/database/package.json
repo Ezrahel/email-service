@@ -1,5 +1,5 @@
 {
-  "name": "@email-service/database",
+  "name": "@resendbyte/database",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -34,16 +34,16 @@
     "db:seed": "node dist/seeds/cli.js"
   },
   "dependencies": {
-    "@email-service/config": "workspace:*",
-    "@email-service/crypto": "workspace:*",
-    "@email-service/errors": "workspace:*",
-    "@email-service/logger": "workspace:*",
-    "@email-service/types": "workspace:*",
+    "@resendbyte/config": "workspace:*",
+    "@resendbyte/crypto": "workspace:*",
+    "@resendbyte/errors": "workspace:*",
+    "@resendbyte/logger": "workspace:*",
+    "@resendbyte/types": "workspace:*",
     "kysely": "^0.27.0",
     "pg": "^8.22.0"
   },
   "devDependencies": {
-    "@email-service/tsconfig": "workspace:*",
+    "@resendbyte/tsconfig": "workspace:*",
     "@types/node": "^20.14.0",
     "@types/pg": "^8.11.0",
     "typescript": "^5.5.0",

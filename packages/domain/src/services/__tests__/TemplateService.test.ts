@@ -30,7 +30,7 @@ const mockDb = vi.hoisted(() => {
   };
 });
 
-vi.mock("@email-service/database", () => ({
+vi.mock("@resendbyte/database", () => ({
   db: mockDb,
 }));
 

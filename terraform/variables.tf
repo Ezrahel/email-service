@@ -58,7 +58,7 @@ variable "db_max_allocated_storage" {
 variable "db_username" {
   description = "RDS master username"
   type        = string
-  default     = "email_service"
+  default     = "resendbyte"
 }
 
 variable "redis_node_type" {

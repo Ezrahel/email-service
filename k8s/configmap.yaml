@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: email-service-config
-  namespace: email-service
+  name: resendbyte-config
+  namespace: resendbyte
 data:
   RAILS_ENV: "production"
   RAILS_LOG_LEVEL: "info"
@@ -12,10 +12,10 @@ data:
   SIDEKIQ_QUEUES: "default,providers,events,webhooks,analytics,domains"
   OTEL_EXPORTER: "otlp"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
-  OTEL_SERVICE_NAME: "email-service"
+  OTEL_SERVICE_NAME: "resendbyte"
   RATE_LIMIT_EMAILS_PER_SECOND: "50"
   RATE_LIMIT_EMAILS_PER_DAY: "10000"
   RATE_LIMIT_API_REQUESTS_PER_MINUTE: "300"
   AWS_REGION: "us-east-1"
   S3_REGION: "us-east-1"
-  S3_BUCKET: "email-service-storage"
+  S3_BUCKET: "resendbyte-storage"

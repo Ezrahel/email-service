@@ -32,11 +32,11 @@ const mockDb = vi.hoisted(() => {
   };
 });
 
-vi.mock("@email-service/database", () => ({
+vi.mock("@resendbyte/database", () => ({
   db: mockDb,
 }));
 
-vi.mock("@email-service/crypto", () => ({
+vi.mock("@resendbyte/crypto", () => ({
   verifyPassword: vi.fn(),
   generateAccessToken: vi.fn(),
   generateRefreshToken: vi.fn(),
@@ -45,7 +45,7 @@ vi.mock("@email-service/crypto", () => ({
 }));
 
 import { AuthService } from "../AuthService.js";
-import * as crypto from "@email-service/crypto";
+import * as crypto from "@resendbyte/crypto";
 
 describe("AuthService", () => {
   let service: AuthService;

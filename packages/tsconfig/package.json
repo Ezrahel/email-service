@@ -1,5 +1,5 @@
 {
-  "name": "@email-service/tsconfig",
+  "name": "@resendbyte/tsconfig",
   "type": "module",
   "version": "0.2.0",
   "private": true,

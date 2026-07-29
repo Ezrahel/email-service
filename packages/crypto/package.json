@@ -1,5 +1,5 @@
 {
-  "name": "@email-service/crypto",
+  "name": "@resendbyte/crypto",
   "type": "module",
   "version": "0.2.0",
   "private": true,
@@ -20,16 +20,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@email-service/config": "workspace:*",
-    "@email-service/errors": "workspace:*",
-    "@email-service/logger": "workspace:*",
-    "@email-service/types": "workspace:*",
+    "@resendbyte/config": "workspace:*",
+    "@resendbyte/errors": "workspace:*",
+    "@resendbyte/logger": "workspace:*",
+    "@resendbyte/types": "workspace:*",
     "bcryptjs": "^2.4.3",
     "better-auth": "^1.6.23",
     "jose": "^6.2.3"
   },
   "devDependencies": {
-    "@email-service/tsconfig": "workspace:*",
+    "@resendbyte/tsconfig": "workspace:*",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.0",
     "typescript": "^5.5.0",

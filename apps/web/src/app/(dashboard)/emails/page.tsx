@@ -13,14 +13,17 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { Send, Plus, Search } from "lucide-react";
 
-const statusBadge: Record<string, { variant: "success" | "warning" | "danger" | "info"; label: string }> = {
+const statusBadge: Record<string, { variant: "success" | "warning" | "danger" | "info" | "neutral"; label: string }> = {
   queued: { variant: "warning", label: "Queued" },
+  scheduled: { variant: "info", label: "Scheduled" },
   sending: { variant: "info", label: "Sending" },
   delivered: { variant: "success", label: "Delivered" },
   bounced: { variant: "danger", label: "Bounced" },
   opened: { variant: "info", label: "Opened" },
   clicked: { variant: "success", label: "Clicked" },
   complained: { variant: "danger", label: "Complained" },
+  cancelled: { variant: "neutral", label: "Cancelled" },
+  retrying: { variant: "warning", label: "Retrying" },
 };
 
 function relativeTime(date: string): string {
@@ -45,6 +48,7 @@ export default function EmailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const [environment, setEnvironment] = useState("");
   const [search, setSearch] = useState("");
 
   const fetchEmails = useCallback(async (page: number) => {
@@ -53,6 +57,7 @@ export default function EmailsPage() {
     try {
       const params = new URLSearchParams({ page: String(page), perPage: String(PER_PAGE_DEFAULT) });
       if (status) params.set("status", status);
+      if (environment) params.set("environment", environment);
       const res: any = await api.get(`/emails?${params}`);
       setData(res.data || []);
       setMeta(res.meta || { page, perPage: PER_PAGE_DEFAULT, total: 0, pages: 0 });
@@ -61,7 +66,7 @@ export default function EmailsPage() {
     } finally {
       setLoading(false);
     }
-  }, [status]);
+  }, [status, environment]);
 
   useEffect(() => { fetchEmails(1); }, [fetchEmails]);
 
@@ -97,6 +102,15 @@ export default function EmailsPage() {
           value={status}
           onChange={(v) => setStatus(v)}
         />
+        <Select
+          options={[
+            { value: "", label: "All environments" },
+            { value: "live", label: "Live" },
+            { value: "sandbox", label: "Sandbox" },
+          ]}
+          value={environment}
+          onChange={(v) => setEnvironment(v)}
+        />
       </div>
 
       {loading ? (
@@ -120,24 +134,27 @@ export default function EmailsPage() {
       ) : (
         <>
           <div className="glass rounded-[16px] overflow-hidden animate-fade-in">
-            <div className="grid grid-cols-[1fr_2fr_auto_auto] gap-4 px-5 py-3 text-[13px] font-medium text-text-secondary border-b border-[rgba(0,0,0,0.04)]">
+            <div className="grid grid-cols-[1fr_2fr_auto_auto_auto] gap-4 px-5 py-3 text-[13px] font-medium text-text-secondary border-b border-[rgba(0,0,0,0.04)]">
               <span>To</span>
               <span>Subject</span>
               <span>Status</span>
-              <span>Sent</span>
+              <span>Date</span>
             </div>
             {data.map((email: any) => {
               const sb = statusBadge[email.status] || { variant: "neutral" as const, label: email.status };
               return (
                 <div
                   key={email.id}
-                  className="grid grid-cols-[1fr_2fr_auto_auto] gap-4 px-5 py-3.5 border-b border-[rgba(0,0,0,0.04)] last:border-0 hover:bg-accent-glass cursor-pointer transition-colors items-center text-[15px]"
+                  className="grid grid-cols-[1fr_2fr_auto_auto_auto] gap-4 px-5 py-3.5 border-b border-[rgba(0,0,0,0.04)] last:border-0 hover:bg-accent-glass cursor-pointer transition-colors items-center text-[15px]"
                   onClick={() => router.push(`/emails/${email.id}`)}
                 >
                   <span className="text-text-primary truncate">{truncate(email.to_address, 30)}</span>
                   <span className="text-text-primary truncate">{truncate(email.subject || "(no subject)", 50)}</span>
-                  <Badge variant={sb.variant as any} dot>{sb.label}</Badge>
-                  <span className="text-text-tertiary text-[13px]">{relativeTime(email.created_at)}</span>
+                  <span className="flex items-center gap-1.5">
+                    <Badge variant={sb.variant as any} dot>{sb.label}</Badge>
+                    {email.environment === "sandbox" && <Badge variant="warning">sandbox</Badge>}
+                  </span>
+                  <span className="text-text-tertiary text-[13px]">{relativeTime(email.scheduled_at || email.created_at)}</span>
                 </div>
               );
             })}

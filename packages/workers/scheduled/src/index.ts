@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
-import { createWorker, QUEUE_NAMES, type MaintenanceJob, type DomainVerificationJob } from "@email-service/queue";
-import { db } from "@email-service/database";
-import { logger } from "@email-service/logger";
+import { createWorker, QUEUE_NAMES, type MaintenanceJob, type DomainVerificationJob } from "@resendbyte/queue";
+import { db } from "@resendbyte/database";
+import { logger } from "@resendbyte/logger";
 import { sql } from "kysely";
 
 async function handleMaintenance(job: { task: string }): Promise<void> {

@@ -4,19 +4,24 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import compress from "@fastify/compress";
+import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUI from "@fastify/swagger-ui";
-import { env } from "@email-service/config";
-import { logger } from "@email-service/logger";
-import { db, closeDatabase, checkDatabaseConnection } from "@email-service/database";
-import { closeQueueConnections } from "@email-service/queue";
-import { initTelemetry, shutdownTelemetry } from "@email-service/telemetry";
+import { env } from "@resendbyte/config";
+import { logger } from "@resendbyte/logger";
+import { db, closeDatabase, checkDatabaseConnection } from "@resendbyte/database";
+import { closeQueueConnections } from "@resendbyte/queue";
+import { initTelemetry, shutdownTelemetry } from "@resendbyte/telemetry";
 import {
   ApplicationError,
   NotFoundError,
   toApplicationError,
-} from "@email-service/errors";
+} from "@resendbyte/errors";
 import { registerRoutes } from "./routes/index.js";
+import { trackingRoutes } from "./routes/tracking.js";
+import { startSmtpServer, stopSmtpServer } from "@resendbyte/smtp-gateway";
+import { getMetricsAsText } from "@resendbyte/telemetry";
+import { auditResponseHandler } from "./middleware/audit.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -48,6 +53,11 @@ async function buildServer(): Promise<FastifyInstance> {
   });
 
   await server.register(compress, { global: true, threshold: 1024 });
+
+  await server.register(multipart, {
+    limits: { fileSize: 25 * 1024 * 1024, files: 10 },
+    throwFileSizeLimit: false,
+  });
 
   await server.register(swagger, {
     openapi: {
@@ -96,10 +106,16 @@ async function buildServer(): Promise<FastifyInstance> {
 
   server.addHook("onResponse", async (request, reply) => {
     const duration = Date.now() - (request.startTime || Date.now());
-    logger.debug(
-      { method: request.method, url: request.url, status: reply.statusCode, duration },
+    logger.info(
+      { method: request.method, url: request.url, status: reply.statusCode, duration, orgId: (request as any).organizationId },
       "Request completed"
     );
+    await auditResponseHandler(request, reply);
+  });
+
+  server.get("/metrics", async (_request, reply) => {
+    const metrics = await getMetricsAsText();
+    reply.header("Content-Type", "text/plain; charset=utf-8").send(metrics);
   });
 
   server.get("/health", async () => {
@@ -118,6 +134,7 @@ async function buildServer(): Promise<FastifyInstance> {
     return { ready: true };
   });
 
+  await server.register(trackingRoutes);
   await server.register(registerRoutes, { prefix: env.API_PREFIX });
 
   return server;
@@ -133,6 +150,10 @@ async function start() {
     logger.info(`Server listening on port ${env.PORT}`);
     logger.info(`API docs available at http://localhost:${env.PORT}/docs`);
     logger.info(`Health check at http://localhost:${env.PORT}/health`);
+
+    if (env.FF_ENABLE_SMTP_GATEWAY !== false) {
+      await startSmtpServer();
+    }
 
     const signals = ["SIGTERM", "SIGINT"];
     for (const signal of signals) {
@@ -150,7 +171,7 @@ async function start() {
 
 async function shutdown(): Promise<void> {
   logger.info("Shutting down gracefully...");
-  await Promise.all([closeDatabase(), closeQueueConnections(), shutdownTelemetry()]);
+  await Promise.all([closeDatabase(), closeQueueConnections(), shutdownTelemetry(), stopSmtpServer()]);
   logger.info("Shutdown complete");
 }
 

@@ -4,7 +4,7 @@ if ENV.fetch("OTEL_EXPORTER", "none") != "none"
   require "opentelemetry-instrumentation-all"
 
   OpenTelemetry::SDK.configure do |c|
-    c.service_name = ENV.fetch("OTEL_SERVICE_NAME", "email-service")
+    c.service_name = ENV.fetch("OTEL_SERVICE_NAME", "resendbyte")
     c.service_version = EmailService::Application::VERSION rescue "0.1.0"
 
     instrumentations = {

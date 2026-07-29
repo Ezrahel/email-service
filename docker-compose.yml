@@ -3,11 +3,11 @@ version: "3.9"
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: email-service-postgres
+    container_name: resendbyte-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: email_service
+      POSTGRES_DB: resendbyte
     ports:
       - "5432:5432"
     volumes:
@@ -21,7 +21,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: email-service-redis
+    container_name: resendbyte-redis
     ports:
       - "6379:6379"
     volumes:
@@ -35,7 +35,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: email-service-minio
+    container_name: resendbyte-minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -53,7 +53,7 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:1.53
-    container_name: email-service-jaeger
+    container_name: resendbyte-jaeger
     ports:
       - "16686:16686"
       - "6831:6831/udp"
@@ -64,7 +64,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.51.0
-    container_name: email-service-prometheus
+    container_name: resendbyte-prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -79,7 +79,7 @@ services:
 
   grafana:
     image: grafana/grafana:10.3.0
-    container_name: email-service-grafana
+    container_name: resendbyte-grafana
     ports:
       - "3000:3000"
     environment:

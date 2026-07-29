@@ -5,7 +5,7 @@ A production-grade transactional email delivery platform migrated from Ruby on R
 ## Architecture
 
 ```
-email-service/
+resendbyte/
 ├── packages/
 │   ├── config/          # Environment configuration (Zod)
 │   ├── types/           # Shared types, branded IDs, schemas
@@ -77,7 +77,7 @@ pnpm dev
 cp .env.example .env
 
 # Required variables
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/email_service
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/resendbyte
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your-super-secret-key-at-least-32-chars
 NODE_ENV=development
@@ -162,20 +162,20 @@ Workers run as separate processes:
 
 ```bash
 # Email processing
-pnpm --filter=@email-service/workers-email-processor dev
+pnpm --filter=@resendbyte/workers-email-processor dev
 
 # Delivery processing
-pnpm --filter=@email-service/workers-delivery-processor dev
+pnpm --filter=@resendbyte/workers-delivery-processor dev
 
 # Analytics rollups
-pnpm --filter=@email-service/workers-analytics-processor dev
+pnpm --filter=@resendbyte/workers-analytics-processor dev
 ```
 
 ## Database Migrations
 
 ```bash
 # Generate new migration
-pnpm --filter=@email-service/database db:generate --name "add_new_table"
+pnpm --filter=@resendbyte/database db:generate --name "add_new_table"
 
 # Run migrations
 pnpm db:migrate
@@ -197,7 +197,7 @@ pnpm db:rollback
 pnpm build
 
 # Build Docker image
-docker build -t email-service:latest .
+docker build -t resendbyte:latest .
 
 # Run production
 docker compose -f docker-compose.prod.yml up -d

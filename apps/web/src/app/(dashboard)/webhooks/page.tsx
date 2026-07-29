@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { api } from "@/lib/api";
 import { WEBHOOK_EVENTS } from "@/lib/constants";
@@ -11,9 +12,10 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
-import { Plus, Webhook, Trash2, Activity } from "lucide-react";
+import { Plus, Webhook, Trash2, Activity, RefreshCw, List, AlertTriangle } from "lucide-react";
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
@@ -29,6 +31,7 @@ interface WebhookData {
 }
 
 export default function WebhooksPage() {
+  const router = useRouter();
   const { toast } = useToast();
   const [data, setData] = useState<WebhookData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +43,9 @@ export default function WebhooksPage() {
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<WebhookData | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [rotateTarget, setRotateTarget] = useState<WebhookData | null>(null);
+  const [rotating, setRotating] = useState(false);
+  const [newSecret, setNewSecret] = useState<string | null>(null);
 
   const fetchWebhooks = useCallback(async () => {
     setLoading(true);
@@ -82,6 +88,26 @@ export default function WebhooksPage() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleRotate = async () => {
+    if (!rotateTarget) return;
+    setRotating(true);
+    try {
+      const res: any = await api.post(`/webhooks/${rotateTarget.id}/rotate-secret`);
+      setNewSecret(res.secret);
+      toast({ type: "success", title: "Secret rotated" });
+      fetchWebhooks();
+    } catch (e: any) {
+      toast({ type: "error", title: "Failed to rotate secret", message: e.message });
+    } finally {
+      setRotating(false);
+    }
+  };
+
+  const closeRotate = () => {
+    setRotateTarget(null);
+    setNewSecret(null);
   };
 
   const handleDelete = async () => {
@@ -164,14 +190,34 @@ export default function WebhooksPage() {
                     </div>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-text-tertiary hover:text-danger shrink-0"
-                  onClick={() => setDeleteTarget(wh)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-text-tertiary hover:text-accent"
+                    onClick={() => router.push(`/webhooks/${wh.id}/deliveries`)}
+                    title="View deliveries"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-text-tertiary hover:text-accent"
+                    onClick={() => { setRotateTarget(wh); setNewSecret(null); }}
+                    title="Rotate secret"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-text-tertiary hover:text-danger"
+                    onClick={() => setDeleteTarget(wh)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
@@ -207,6 +253,37 @@ export default function WebhooksPage() {
             <Button onClick={handleCreate} loading={creating}>Create</Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal open={!!rotateTarget} onClose={closeRotate} title="Rotate Webhook Secret">
+        {newSecret ? (
+          <div className="flex flex-col gap-4">
+            <div className="glass-sm p-4 flex items-start gap-3 bg-warning/10 border border-warning/20 rounded-lg">
+              <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[14px] font-medium text-warning">Copy this secret now</p>
+                <p className="text-[13px] text-text-secondary mt-0.5">You won&apos;t be able to see it again after closing this dialog.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-[rgba(0,0,0,0.03)] p-3 rounded-lg">
+              <code className="flex-1 text-[14px] font-mono text-text-primary break-all">{newSecret}</code>
+              <CopyButton value={newSecret} />
+            </div>
+            <div className="flex justify-end pt-2">
+              <Button onClick={closeRotate}>Done</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <p className="text-[14px] text-text-secondary">
+              Rotate the secret for <strong>{rotateTarget?.url}</strong>? The current secret will be immediately invalidated.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="secondary" onClick={closeRotate}>Cancel</Button>
+              <Button onClick={handleRotate} loading={rotating}>Rotate</Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <Dialog

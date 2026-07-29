@@ -174,7 +174,11 @@ export enum WebhookEventType {
   EMAIL_BOUNCED = "email.bounced",
   EMAIL_COMPLAINED = "email.complained",
   EMAIL_FAILED = "email.failed",
+  DOMAIN_VERIFIED = "domain.verified",
+  DOMAIN_FAILED = "domain.failed",
 }
+
+export const ALL_WEBHOOK_EVENTS: string[] = Object.values(WebhookEventType);
 
 export enum JobStatus {
   PENDING = "pending",

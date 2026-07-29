@@ -1,4 +1,4 @@
-import type { SendEmailMessage, ProviderAdapterConfig, ProviderResponse } from "@email-service/types";
+import type { SendEmailMessage, ProviderAdapterConfig, ProviderResponse } from "@resendbyte/types";
 import { BaseProviderAdapter } from "./ProviderAdapter.js";
 
 export class SendGridAdapter extends BaseProviderAdapter {

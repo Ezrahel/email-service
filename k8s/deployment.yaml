@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: email-service-api
-  namespace: email-service
+  name: resendbyte-api
+  namespace: resendbyte
   labels:
-    app: email-service
+    app: resendbyte
     tier: api
 spec:
   replicas: 3
@@ -15,26 +15,26 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: email-service
+      app: resendbyte
       tier: api
   template:
     metadata:
       labels:
-        app: email-service
+        app: resendbyte
         tier: api
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "3000"
         prometheus.io/path: "/metrics"
     spec:
-      serviceAccountName: email-service
+      serviceAccountName: resendbyte
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
       containers:
         - name: api
-          image: email-service:latest
+          image: resendbyte:latest
           imagePullPolicy: Always
           command: ["rails", "server", "-b", "0.0.0.0"]
           ports:
@@ -42,9 +42,9 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: email-service-config
+                name: resendbyte-config
             - secretRef:
-                name: email-service-secrets
+                name: resendbyte-secrets
           resources:
             requests:
               cpu: "500m"
@@ -76,10 +76,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: email-service-sidekiq
-  namespace: email-service
+  name: resendbyte-sidekiq
+  namespace: resendbyte
   labels:
-    app: email-service
+    app: resendbyte
     tier: worker
 spec:
   replicas: 2
@@ -90,32 +90,32 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: email-service
+      app: resendbyte
       tier: worker
   template:
     metadata:
       labels:
-        app: email-service
+        app: resendbyte
         tier: worker
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "3000"
     spec:
-      serviceAccountName: email-service
+      serviceAccountName: resendbyte
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
       containers:
         - name: sidekiq
-          image: email-service:latest
+          image: resendbyte:latest
           imagePullPolicy: Always
           command: ["sidekiq", "-C", "config/sidekiq.yml"]
           envFrom:
             - configMapRef:
-                name: email-service-config
+                name: resendbyte-config
             - secretRef:
-                name: email-service-secrets
+                name: resendbyte-secrets
           resources:
             requests:
               cpu: "500m"

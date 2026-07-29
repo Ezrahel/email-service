@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { z, type ZodSchema, ZodError } from "zod";
-import { ValidationError } from "@email-service/errors";
+import { ValidationError } from "@resendbyte/errors";
 
 export function validateBody<T extends ZodSchema>(schema: T) {
   return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
@@ -61,6 +61,8 @@ export const paginationSchema = z.object({
   perPage: z.coerce.number().int().positive().max(100).default(50),
   sortBy: z.string().optional(),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  after: z.string().optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
 });
 
 export const idParamSchema = z.object({

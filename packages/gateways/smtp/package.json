@@ -1,0 +1,38 @@
+{
+  "name": "@resendbyte/smtp-gateway",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@resendbyte/config": "workspace:*",
+    "@resendbyte/crypto": "workspace:*",
+    "@resendbyte/database": "workspace:*",
+    "@resendbyte/domain": "workspace:*",
+    "@resendbyte/errors": "workspace:*",
+    "@resendbyte/logger": "workspace:*",
+    "@resendbyte/queue": "workspace:*",
+    "@resendbyte/types": "workspace:*",
+    "mailparser": "^3.7.0",
+    "smtp-server": "^3.13.0"
+  },
+  "devDependencies": {
+    "@resendbyte/tsconfig": "workspace:*",
+    "@types/node": "^20.14.0",
+    "@types/smtp-server": "^3.5.10",
+    "typescript": "^5.5.0"
+  }
+}

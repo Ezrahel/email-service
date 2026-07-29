@@ -3,7 +3,7 @@ module SidekiqMiddleware
     def call(worker, job, queue)
       # OpenTelemetry span propagation
       if defined?(OpenTelemetry) && OpenTelemetry.tracer_provider
-        tracer = OpenTelemetry.tracer_provider.tracer("email-service")
+        tracer = OpenTelemetry.tracer_provider.tracer("resendbyte")
         span_name = "#{queue}.#{worker.class.name}"
 
         attributes = {

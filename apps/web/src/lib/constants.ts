@@ -13,15 +13,18 @@ export const SCOPES = [
 
 export const SCOPE_IDS = SCOPES.map((s) => s.id);
 
-export const EMAIL_STATUSES = ["queued", "sending", "delivered", "bounced", "opened", "clicked", "complained"] as const;
+export const EMAIL_STATUSES = ["queued", "scheduled", "sending", "delivered", "bounced", "opened", "clicked", "complained", "failed", "cancelled"] as const;
 
 export const WEBHOOK_EVENTS = [
+  "email.sent",
   "email.delivered",
   "email.bounced",
   "email.opened",
   "email.clicked",
   "email.complained",
-  "email.sent",
+  "email.failed",
+  "domain.verified",
+  "domain.failed",
 ] as const;
 
 export const PER_PAGE_DEFAULT = 20;

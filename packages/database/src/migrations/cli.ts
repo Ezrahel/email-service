@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { Migrator, FileMigrationProvider } from "kysely";
 import { db, closeDatabase } from "../index.js";
-import { logger } from "@email-service/logger";
+import { logger } from "@resendbyte/logger";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

@@ -282,7 +282,7 @@ async function validateMigration() {
 ## Appendix: File Structure (Target)
 
 ```
-email-service/
+resendbyte/
 ├── package.json                    # pnpm workspace root
 ├── turbo.json                      # Turborepo pipeline
 ├── tsconfig.base.json              # Strict TypeScript config

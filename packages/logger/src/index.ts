@@ -1,5 +1,5 @@
 import pino, { type Logger, type LoggerOptions, type DestinationStream } from "pino";
-import { env } from "@email-service/config";
+import { env } from "@resendbyte/config";
 
 const isDevelopment = env.NODE_ENV === "development";
 const isTest = env.NODE_ENV === "test";

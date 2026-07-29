@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { db, closeDatabase } from "../index.js";
-import { logger } from "@email-service/logger";
-import { hashPassword, generateAPIKey } from "@email-service/crypto";
+import { logger } from "@resendbyte/logger";
+import { hashPassword, generateAPIKey } from "@resendbyte/crypto";
 
 async function seed() {
   logger.info("Seeding database...");
@@ -29,6 +29,7 @@ async function seed() {
     ip_allowlist_enabled: false, ip_allowlist: [],
     monthly_email_limit: 100000, emails_sent_this_month: 0,
     month_start_date: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
+    overage_enabled: false,
     status: "active", created_at: now, updated_at: now,
   }).execute();
 

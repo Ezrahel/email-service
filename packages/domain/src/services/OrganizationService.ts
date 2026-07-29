@@ -1,4 +1,4 @@
-import { db } from "@email-service/database";
+import { db } from "@resendbyte/database";
 import { sql } from "kysely";
 
 export class OrganizationService {

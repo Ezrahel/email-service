@@ -1,5 +1,5 @@
 {
-  "name": "email-service",
+  "name": "resendbyte",
   "version": "0.2.0",
   "private": true,
   "description": "Transactional email delivery platform - TypeScript migration",
@@ -11,8 +11,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,json,md}\"",
     "typecheck": "turbo run typecheck",
-    "db:migrate": "turbo run db:migrate --filter=@email-service/database",
-    "db:seed": "turbo run db:seed --filter=@email-service/database",
+    "db:migrate": "turbo run db:migrate --filter=@resendbyte/database",
+    "db:seed": "turbo run db:seed --filter=@resendbyte/database",
     "docker:build": "docker compose -f docker-compose.yml build",
     "docker:up": "docker compose -f docker-compose.yml up -d",
     "docker:down": "docker compose -f docker-compose.yml down"

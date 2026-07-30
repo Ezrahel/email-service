@@ -107,7 +107,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
-    environment: staging
     steps:
       - uses: actions/checkout@v4
       - name: Configure kubectl

@@ -68,7 +68,7 @@ export default function AuthenticationPage() {
         <h3 className="text-[17px] font-medium text-text-primary mt-6 mb-2">Using API Keys</h3>
         <p>Include the API key in the Authorization header:</p>
         <CodeBlock lang="text">
-          Authorization: Bearer live_sk_2a3b8c9d0e1f4a5b6c7d8e9f0a1b2c3d
+          Authorization: Bearer live_sk_xxxxxxxxxxxxxxxxxxxxxxxxx
         </CodeBlock>
 
         <h3 className="text-[17px] font-medium text-text-primary mt-6 mb-2">Security Best Practices</h3>

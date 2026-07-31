@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api, setAccessToken } from "@/lib/api";
+import { api } from "@/lib/api";
 
 export function useAnalytics() {
   const [overview, setOverview] = useState<any | null>(null);
@@ -31,8 +31,6 @@ export function useAnalytics() {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
           window.location.href = "/login";
           return;
         }

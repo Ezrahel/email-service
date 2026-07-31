@@ -17,7 +17,7 @@ async function seed() {
 
   await db.insertInto("roles").values({ id: crypto.randomUUID(), name: "admin", description: "Full access", permissions: ["*"], created_at: now, updated_at: now }).execute();
 
-  await db.insertInto("roles").values({ id: crypto.randomUUID(), name: "member", description: "Limited access", permissions: ["email:send", "email:read", "template:manage"], created_at: now, updated_at: now }).execute();
+  await db.insertInto("roles").values({ id: crypto.randomUUID(), name: "member", description: "Limited access", permissions: ["email:send", "email:read", "template:read", "template:write"], created_at: now, updated_at: now }).execute();
 
   const roles = await db.selectFrom("roles").selectAll().execute();
   const adminRole = roles.find((r) => r.name === "admin")!;
@@ -42,6 +42,20 @@ async function seed() {
     created_at: now, updated_at: now,
   }).execute();
 
+  await db.insertInto("user").values({
+    id: userId, name: "Admin User", email: "admin@example.com",
+    emailVerified: true,
+    createdAt: now, updatedAt: now,
+    organizationId: orgId, firstName: "Admin", lastName: "User",
+    timezone: "UTC", locale: "en",
+  }).execute();
+
+  await db.insertInto("account").values({
+    id: crypto.randomUUID(), accountId: "admin@example.com",
+    providerId: "credential", userId: userId,
+    password: passwordHash, createdAt: now, updatedAt: now,
+  }).execute();
+
   await db.insertInto("memberships").values({
     id: crypto.randomUUID(), user_id: userId, organization_id: orgId,
     role_id: adminRole.id, status: "active",
@@ -53,7 +67,7 @@ async function seed() {
     id: crypto.randomUUID(), organization_id: orgId, user_id: userId,
     name: "Demo API Key",
     key_prefix: prefix!, key_digest: digest!, key_last_chars: lastChars!,
-    scopes: ["email:send", "email:read", "template:manage", "webhook:manage", "api_key:manage"],
+    scopes: ["email:send", "email:read", "template:read", "template:write", "webhook:read", "webhook:write", "api_key:read", "api_key:write", "analytics:read"],
     allowed_ips: [], status: "active",
     created_at: now, updated_at: now,
   }).execute();

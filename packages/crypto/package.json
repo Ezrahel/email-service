@@ -25,7 +25,6 @@
     "@resendbyte/logger": "workspace:*",
     "@resendbyte/types": "workspace:*",
     "bcryptjs": "^2.4.3",
-    "better-auth": "^1.6.23",
     "jose": "^6.2.3"
   },
   "devDependencies": {

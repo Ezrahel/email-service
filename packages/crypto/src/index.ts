@@ -1,36 +1,6 @@
-import { betterAuth } from "better-auth";
 import { env } from "@resendbyte/config";
 import { logger } from "@resendbyte/logger";
 import crypto from "crypto";
-
-export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL,
-  secret: env.BETTER_AUTH_SECRET,
-  trustedOrigins: env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") || [],
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-    autoSignIn: true,
-  },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7,
-    updateAge: 60 * 60 * 24,
-  },
-  user: {
-    additionalFields: {
-      organizationId: { type: "string", required: false },
-      firstName: { type: "string", required: false },
-      lastName: { type: "string", required: false },
-      timezone: { type: "string", default: "UTC", required: false },
-      locale: { type: "string", default: "en", required: false },
-    },
-  },
-  plugins: [],
-  logger: {
-    log: (message) => logger.debug({ message }, "Better Auth"),
-    error: (message: string, error: Error) => logger.error({ message, error }, "Better Auth Error"),
-  },
-});
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   const bcrypt = await import("bcryptjs");
@@ -45,8 +15,8 @@ export async function hashPassword(password: string): Promise<string> {
 export function generateAPIKey(environment?: string): { prefix: string; fullKey: string; digest: string; lastChars: string } {
   const keyPrefix = environment === "sandbox" ? "sk_test_" : environment === "live" ? "sk_live_" : env.API_KEY_PREFIX;
   const randomPart = crypto.randomBytes(24).toString("hex");
-  const fullKey = `${keyPrefix}${randomPart}`;
   const prefix = `${keyPrefix}${randomPart.slice(0, 4)}_`;
+  const fullKey = `${prefix}${randomPart.slice(4)}`;
   const digest = crypto.createHash("sha256").update(fullKey).digest("hex");
   const lastChars = fullKey.slice(-4);
   return { prefix, fullKey, digest, lastChars };
@@ -65,12 +35,12 @@ export function generateIdempotencyKey(): string {
   return `idem_${crypto.randomBytes(16).toString("hex")}`;
 }
 
-export function generateWebhookSignature(payload: string, secret: string): string {
-  return crypto.createHmac("sha256", secret).update(payload).digest("hex");
+export function generateWebhookSignature(payload: string, secret: string, algorithm: "sha256" | "sha512" = "sha256"): string {
+  return crypto.createHmac(algorithm, secret).update(payload).digest("hex");
 }
 
-export function verifyWebhookSignature(payload: string, secret: string, signature: string): boolean {
-  const expected = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+export function verifyWebhookSignature(payload: string, secret: string, signature: string, algorithm: "sha256" | "sha512" = "sha256"): boolean {
+  const expected = crypto.createHmac(algorithm, secret).update(payload).digest("hex");
   if (expected.length !== signature.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(signature, "hex"));
 }
@@ -158,12 +128,16 @@ export async function generateRefreshToken(userId: string, email?: string): Prom
 
 export async function verifyAccessToken(token: string): Promise<{ sub: string; email: string }> {
   const { payload } = await jwtVerify(token, JWT_SECRET);
+  if (payload["type"] !== "access") {
+    throw new Error("Invalid token type: expected access token");
+  }
   return { sub: payload.sub as string, email: payload["email"] as string };
 }
 
 export async function verifyRefreshToken(token: string): Promise<{ sub: string; email?: string }> {
   const { payload } = await jwtVerify(token, JWT_SECRET);
+  if (payload["type"] !== "refresh") {
+    throw new Error("Invalid token type: expected refresh token");
+  }
   return { sub: payload.sub as string, email: payload["email"] as string | undefined };
 }
-
-export type { Session, User } from "better-auth";

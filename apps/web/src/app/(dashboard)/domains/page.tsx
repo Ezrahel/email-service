@@ -11,8 +11,9 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
-import { Plus, Globe, ChevronDown, ChevronUp, Shield, CheckCircle, XCircle, RotateCw } from "lucide-react";
+import { Plus, Globe, ChevronDown, ChevronUp, Shield, CheckCircle, XCircle, RotateCw, Trash2 } from "lucide-react";
 
 interface Domain {
   id: string;
@@ -37,7 +38,7 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
 }
 
-function DomainCard({ domain, onVerify }: { domain: Domain; onVerify: (id: string) => void }) {
+function DomainCard({ domain, onVerify, onDelete }: { domain: Domain; onVerify: (id: string) => void; onDelete: (domain: Domain) => void }) {
   const [expanded, setExpanded] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
@@ -45,7 +46,7 @@ function DomainCard({ domain, onVerify }: { domain: Domain; onVerify: (id: strin
     {
       type: "TXT",
       name: `@`,
-      value: `v=spf1 include:mailo.co ~all`,
+      value: `v=spf1 include:resendbyte.co ~all`,
       verified: domain.spf_verified,
       label: "SPF",
     },
@@ -93,6 +94,14 @@ function DomainCard({ domain, onVerify }: { domain: Domain; onVerify: (id: strin
           </Badge>
           <Button size="sm" variant="ghost" onClick={() => setExpanded(!expanded)}>
             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-text-tertiary hover:text-danger shrink-0"
+            onClick={() => onDelete(domain)}
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -147,6 +156,8 @@ export default function DomainsPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [domainName, setDomainName] = useState("");
   const [adding, setAdding] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Domain | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchDomains = useCallback(async () => {
     setLoading(true);
@@ -176,6 +187,21 @@ export default function DomainsPage() {
       toast({ type: "error", title: "Failed to add domain", message: e.message });
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/domains/${deleteTarget.id}`);
+      toast({ type: "success", title: "Domain deleted" });
+      setDeleteTarget(null);
+      fetchDomains();
+    } catch (e: any) {
+      toast({ type: "error", title: "Failed to delete domain", message: e.message });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -220,7 +246,7 @@ export default function DomainsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {data.map((domain) => (
-            <DomainCard key={domain.id} domain={domain} onVerify={fetchDomains} />
+            <DomainCard key={domain.id} domain={domain} onVerify={fetchDomains} onDelete={setDeleteTarget} />
           ))}
         </div>
       )}
@@ -239,6 +265,17 @@ export default function DomainsPage() {
           </div>
         </div>
       </Modal>
+
+      <Dialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Domain"
+        message={`Are you sure you want to delete "${deleteTarget?.domain || ""}"? This domain will be permanently deleted and any emails sent from it will be affected.`}
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </PageShell>
   );
 }

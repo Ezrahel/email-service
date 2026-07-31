@@ -12,6 +12,7 @@ import {
   Key,
   Ban,
   CreditCard,
+  BookOpen,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -49,7 +50,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             collapsed && "opacity-0 invisible w-0 overflow-hidden",
           )}
         >
-          Mailo
+          ResendByte
         </span>
         {collapsed && (
           <span className="font-semibold text-[17px] tracking-tight text-text-primary mx-auto">
@@ -88,7 +89,25 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         })}
       </nav>
 
-      <div className="p-2 border-t border-[rgba(0,0,0,0.06)] shrink-0">
+      <div className="p-2 border-t border-[rgba(0,0,0,0.06)] shrink-0 flex flex-col gap-1">
+        <Link
+          href="/docs"
+          className={clsx(
+            "flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[15px] font-medium transition-all duration-200",
+            "text-text-secondary hover:bg-accent-glass hover:text-text-primary",
+            collapsed && "justify-center px-0",
+          )}
+        >
+          <BookOpen className="w-5 h-5 shrink-0" />
+          <span
+            className={clsx(
+              "transition-opacity duration-200",
+              collapsed && "opacity-0 invisible w-0 overflow-hidden",
+            )}
+          >
+            Documentation
+          </span>
+        </Link>
         <button
           onClick={onToggle}
           className="flex items-center justify-center w-full px-3 py-2.5 rounded-[10px] text-text-secondary hover:bg-accent-glass hover:text-text-primary transition-all duration-200"

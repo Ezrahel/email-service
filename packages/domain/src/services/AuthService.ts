@@ -35,7 +35,12 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string): Promise<{ token: string; refreshToken: string; expiresAt: Date }> {
-    const payload = await verifyRefresh(refreshToken);
+    let payload;
+    try {
+      payload = await verifyRefresh(refreshToken);
+    } catch {
+      throw new UnauthorizedError("Invalid or expired refresh token");
+    }
     if (!payload) throw new UnauthorizedError("Invalid or expired refresh token");
     const { token, expiresAt } = await generateAccessToken(payload.sub, payload.email || "");
     const { token: newRefreshToken } = await generateRefreshToken(payload.sub);

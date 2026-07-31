@@ -3,11 +3,14 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 export const SCOPES = [
   { id: "email:send", label: "Send emails" },
   { id: "email:read", label: "Read emails" },
-  { id: "template:manage", label: "Manage templates" },
+  { id: "template:read", label: "View templates" },
+  { id: "template:write", label: "Manage templates" },
   { id: "domain:read", label: "Read domains" },
   { id: "domain:write", label: "Manage domains" },
-  { id: "webhook:manage", label: "Manage webhooks" },
-  { id: "api_key:manage", label: "Manage API keys" },
+  { id: "webhook:read", label: "View webhooks" },
+  { id: "webhook:write", label: "Manage webhooks" },
+  { id: "api_key:read", label: "View API keys" },
+  { id: "api_key:write", label: "Manage API keys" },
   { id: "analytics:read", label: "View analytics" },
 ];
 

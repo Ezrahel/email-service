@@ -13,24 +13,10 @@ class ApiError extends Error {
   }
 }
 
-let accessToken: string | null = null;
-
-export function setAccessToken(token: string | null) {
-  accessToken = token;
-}
-
-export function getAccessToken() {
-  return accessToken;
-}
-
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
-
-  if (accessToken) {
-    headers["Authorization"] = `Bearer ${accessToken}`;
-  }
 
   if (options.body && !(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
@@ -39,7 +25,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body:
+      options.body instanceof FormData
+        ? options.body
+        : options.body
+          ? JSON.stringify(options.body)
+          : undefined,
   });
 
   if (res.status === 204) return undefined as T;
@@ -47,9 +38,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const json = await res.json();
 
   if (!res.ok) {
-    if (res.status === 401) {
-      accessToken = null;
-    }
     throw new ApiError(json.error?.message || json.message || "Request failed", res.status);
   }
 

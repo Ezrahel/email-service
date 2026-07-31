@@ -3,6 +3,8 @@ import { verifyAccessToken, verifyAPIKey } from "@resendbyte/crypto";
 import { UnauthorizedError, ForbiddenError } from "@resendbyte/errors";
 import { logger } from "@resendbyte/logger";
 import { db } from "@resendbyte/database";
+import { fromNodeHeaders } from "better-auth/node";
+import { auth } from "../auth.js";
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: {
@@ -31,6 +33,21 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
   const authHeader = request.headers.authorization;
 
   if (!authHeader) {
+    const session = await auth.api.getSession({ headers: fromNodeHeaders(request.raw.headers) });
+    if (session?.user?.id) {
+      const membership = await db
+        .selectFrom("memberships")
+        .select("organization_id")
+        .where("user_id", "=", session.user.id)
+        .where("status", "=", "active")
+        .executeTakeFirst();
+      (request as any).user = {
+        id: session.user.id,
+        email: session.user.email,
+        organizationId: membership?.organization_id || "",
+      };
+      return;
+    }
     throw new UnauthorizedError("Authorization header required");
   }
 

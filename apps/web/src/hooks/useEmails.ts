@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api, setAccessToken } from "@/lib/api";
+import { api } from "@/lib/api";
 
 export function useEmails(page: number, perPage: number, status?: string) {
   const [data, setData] = useState<any[]>([]);
@@ -24,8 +24,6 @@ export function useEmails(page: number, perPage: number, status?: string) {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
           window.location.href = "/login";
           return;
         }
@@ -61,8 +59,6 @@ export function useEmail(id: string) {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
           window.location.href = "/login";
           return;
         }
@@ -96,12 +92,10 @@ export function useSendEmail() {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
-          window.location.href = "/login";
-          return;
-        }
-        setError(e.message || "Failed to send email");
+        window.location.href = "/login";
+        return;
+      }
+      setError(e.message || "Failed to send email");
       }
       throw e;
     } finally {

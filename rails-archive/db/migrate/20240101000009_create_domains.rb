@@ -8,7 +8,7 @@ class CreateDomains < ActiveRecord::Migration[8.0]
       t.boolean :is_verified, null: false, default: false
       t.datetime :verified_at
       t.string :verification_token, null: false
-      t.string :dkim_selector, null: false, default: "mailo"
+      t.string :dkim_selector, null: false, default: "resendbyte"
       t.text :dkim_private_key_ciphertext
       t.string :dkim_public_key
       t.text :spf_record

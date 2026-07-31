@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api, setAccessToken } from "@/lib/api";
+import { api } from "@/lib/api";
 
 export function useTemplates(page: number, perPage: number) {
   const [data, setData] = useState<any[]>([]);
@@ -23,8 +23,6 @@ export function useTemplates(page: number, perPage: number) {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
           window.location.href = "/login";
           return;
         }
@@ -58,12 +56,10 @@ export function useCreateTemplate() {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
-          window.location.href = "/login";
-          return;
-        }
-        setError(e.message || "Failed to create template");
+        window.location.href = "/login";
+        return;
+      }
+      setError(e.message || "Failed to create template");
       }
       throw e;
     } finally {

@@ -2,7 +2,9 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { AuthService, EmailService, DomainService, TemplateService, WebhookService, AnalyticsService, SuppressionService, StorageService, BillingService, AuditService } from "@resendbyte/domain";
 import { db } from "@resendbyte/database";
-import { ValidationError, NotFoundError, InternalError, QuotaExceededError } from "@resendbyte/errors";
+import { ValidationError, NotFoundError, InternalError, QuotaExceededError, UnauthorizedError } from "@resendbyte/errors";
+import { verifyWebhookSignature } from "@resendbyte/crypto";
+import { env } from "@resendbyte/config";
 import { requireScope } from "../middleware/auth.js";
 import { validateBody, validateQuery, validateParams, paginationSchema, idParamSchema } from "../middleware/validation.js";
 import { addJob, QUEUE_NAMES } from "@resendbyte/queue";
@@ -28,7 +30,7 @@ const refreshSchema = z.object({
 });
 const createAPIKeySchema = z.object({
   name: z.string().min(1).max(255),
-  scopes: z.array(z.string()).default(["email:send", "email:read", "template:manage", "webhook:manage", "api_key:manage", "analytics:read"]),
+  scopes: z.array(z.string()).default(["email:send", "email:read", "template:read", "template:write", "webhook:read", "webhook:write", "api_key:read", "api_key:write", "analytics:read"]),
   expiresAt: z.string().datetime().optional(),
   allowedIPs: z.array(z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])$/)).optional(),
   environment: z.enum(["live", "sandbox"]).optional(),
@@ -109,6 +111,12 @@ export async function domainRoutes(app: FastifyInstance): Promise<void> {
     await domainService.get((request as any).organizationId, id);
     await addJob(QUEUE_NAMES.EMAIL_DEFAULT, "verify-domain-dns", { domainId: id, organizationId: (request as any).organizationId });
     reply.send({ data: { message: "Verification started" } });
+  });
+
+  app.delete("/domains/:id", { preHandler: [requireScope("domain:write"), validateParams(idParamSchema)] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await domainService.delete((request as any).organizationId, id);
+    reply.status(204).send();
   });
 }
 
@@ -361,10 +369,25 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
     reply.send({ data: result });
   });
 
-  app.post("/billing/webhook/paystack", async (request, reply) => {
-    const payload = request.body;
-    await billingService.handlePaystackWebhook(payload);
-    reply.status(200).send({ status: "ok" });
+  await app.register(async function paystackWebhook(instance) {
+    const defaultJsonParser = instance.getDefaultJsonParser("error", "error");
+    instance.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
+      (request as any).rawBody = String(body);
+      defaultJsonParser(request, String(body), done);
+    });
+
+    instance.post("/billing/webhook/paystack", async (request, reply) => {
+      const signature = request.headers["x-paystack-signature"];
+      const rawBody = (request as any).rawBody;
+      const secret = env.PAYSTACK_SECRET_KEY;
+
+      if (typeof signature !== "string" || typeof rawBody !== "string" || !secret || !verifyWebhookSignature(rawBody, secret, signature, "sha512")) {
+        throw new UnauthorizedError("Invalid Paystack signature");
+      }
+
+      await billingService.handlePaystackWebhook(request.body);
+      reply.status(200).send({ status: "ok" });
+    });
   });
 }
 

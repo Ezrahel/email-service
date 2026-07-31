@@ -3631,7 +3631,7 @@ ActiveRecord::Schema[8.1].define(version: 2024_01_01_000030) do
     t.text "dkim_private_key_ciphertext"
     t.string "dkim_public_key"
     t.text "dkim_record"
-    t.string "dkim_selector", default: "mailo", null: false
+    t.string "dkim_selector", default: "resendbyte", null: false
     t.text "dmarc_record"
     t.string "domain", null: false
     t.boolean "is_bounce_domain", default: false, null: false

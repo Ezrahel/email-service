@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import {
   Send, CheckCircle, TrendingDown, Eye,
 } from "lucide-react";
-import { api, setAccessToken } from "@/lib/api";
+import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageShell } from "@/components/layout/PageShell";
@@ -58,6 +59,13 @@ interface RecentEmail {
   subject: string;
 }
 
+interface DashboardUser {
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  organizationId?: string | null;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -68,26 +76,13 @@ export default function DashboardPage() {
   const [alerts, setAlerts] = useState<AlertData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [userInfo] = useState(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      return JSON.parse(localStorage.getItem("user") || "null");
-    } catch {
-      return null;
-    }
-  });
+  const { data: session } = authClient.useSession();
+  const userInfo = (session?.user ?? null) as DashboardUser | null;
 
   const fetchAll = async () => {
     setLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token");
-      if (token) setAccessToken(token);
-      if (!token) {
-        router.replace("/login");
-        return;
-      }
-
       const [overviewData, providersData, activityData, alertsData] = await Promise.all([
         api.get<OverviewData>("/analytics/overview"),
         api.get<ProviderData[]>("/dashboard/providers"),
@@ -109,7 +104,6 @@ export default function DashboardPage() {
       setRecentEmails(recent);
     } catch (err: any) {
       if (err.status === 401) {
-        localStorage.removeItem("token");
         router.replace("/login");
         return;
       }
@@ -155,7 +149,7 @@ export default function DashboardPage() {
     return (
       <PageShell title="Dashboard" subtitle={subtitle}>
         <EmptyState
-          title="Welcome to Mailo"
+          title="Welcome to ResendByte"
           description="Your email dashboard is ready. Once you start sending emails, your stats will appear here."
         />
       </PageShell>

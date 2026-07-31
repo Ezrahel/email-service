@@ -553,6 +553,57 @@ export interface RollupDailyDomain {
   updated_at: Date;
 }
 
+export interface BetterAuthUser {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  organizationId: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  timezone: string;
+  locale: string;
+}
+
+export interface BetterAuthSession {
+  id: string;
+  expiresAt: Date;
+  token: string;
+  createdAt: Date;
+  updatedAt: Date;
+  ipAddress: string | null;
+  userAgent: string | null;
+  userId: string;
+}
+
+export interface BetterAuthAccount {
+  id: string;
+  accountId: string;
+  providerId: string;
+  userId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  idToken: string | null;
+  accessTokenExpiresAt: Date | null;
+  refreshTokenExpiresAt: Date | null;
+  scope: string | null;
+  password: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BetterAuthVerification {
+  id: string;
+  identifier: string;
+  value: string;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface DB {
   organizations: Organization;
   roles: Role;
@@ -590,4 +641,8 @@ export interface DB {
   plans: Plan;
   subscriptions: Subscription;
   invoices: Invoice;
+  user: BetterAuthUser;
+  session: BetterAuthSession;
+  account: BetterAuthAccount;
+  verification: BetterAuthVerification;
 }

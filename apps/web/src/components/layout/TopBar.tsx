@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import { useState, useRef, useEffect } from "react";
 import { LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -12,6 +13,8 @@ function capitalize(s: string) {
 export function TopBar() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
+
+  const { logout, user } = useAuth();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -57,7 +60,18 @@ export function TopBar() {
 
         {menuOpen && (
           <div className="absolute right-0 top-full mt-2 w-44 glass-sm py-1 z-50">
-            <button className="flex items-center gap-2 w-full px-3 py-2 text-[14px] text-text-secondary hover:bg-accent-glass transition-colors">
+            {user?.email && (
+              <div className="px-3 py-2 text-[13px] text-text-tertiary border-b border-[rgba(0,0,0,0.04)]">
+                {user.email}
+              </div>
+            )}
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                logout();
+              }}
+              className="flex items-center gap-2 w-full px-3 py-2 text-[14px] text-text-secondary hover:bg-accent-glass hover:text-danger transition-colors"
+            >
               <LogOut className="w-4 h-4" />
               Sign Out
             </button>

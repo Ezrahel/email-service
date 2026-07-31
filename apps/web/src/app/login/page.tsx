@@ -3,25 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { setAccessToken } from "@/lib/api";
-import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-interface LoginResponse {
-  token: string;
-  refreshToken: string;
-  expiresAt: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    organizationId: string;
-  };
-}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,10 +33,11 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const data = await api.post<LoginResponse>("/auth/login", { email, password });
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setAccessToken(data.token);
+      const res = await authClient.signIn.email({ email, password });
+      if (res.error) {
+        setError(res.error.message || "Sign in failed");
+        return;
+      }
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
@@ -64,7 +51,7 @@ export default function LoginPage() {
       <div className="glass p-8 w-full max-w-sm">
         <div className="text-center mb-6">
           <Link href="/" className="text-[32px] font-semibold tracking-tight text-text-primary no-underline">
-            Mailo
+            ResendByte
           </Link>
           <p className="text-[15px] text-text-secondary mt-1">Sign in to your email dashboard</p>
         </div>

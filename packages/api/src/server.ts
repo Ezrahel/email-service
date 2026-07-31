@@ -17,11 +17,14 @@ import {
   NotFoundError,
   toApplicationError,
 } from "@resendbyte/errors";
+import { handleAuth } from "./auth.js";
 import { registerRoutes } from "./routes/index.js";
 import { trackingRoutes } from "./routes/tracking.js";
 import { startSmtpServer, stopSmtpServer } from "@resendbyte/smtp-gateway";
 import { getMetricsAsText } from "@resendbyte/telemetry";
 import { auditResponseHandler } from "./middleware/audit.js";
+
+const authHandler = handleAuth;
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -137,6 +140,11 @@ async function buildServer(): Promise<FastifyInstance> {
   await server.register(trackingRoutes);
   await server.register(registerRoutes, { prefix: env.API_PREFIX });
 
+  server.all("/api/auth/*", async (request, reply) => {
+    reply.hijack();
+    await authHandler(request, reply);
+  });
+
   return server;
 }
 
@@ -152,7 +160,11 @@ async function start() {
     logger.info(`Health check at http://localhost:${env.PORT}/health`);
 
     if (env.FF_ENABLE_SMTP_GATEWAY !== false) {
-      await startSmtpServer();
+      try {
+        await startSmtpServer();
+      } catch (error) {
+        logger.warn({ error }, "Failed to start SMTP gateway — continuing without it");
+      }
     }
 
     const signals = ["SIGTERM", "SIGINT"];

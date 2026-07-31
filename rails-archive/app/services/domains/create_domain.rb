@@ -15,7 +15,7 @@ module Domains
         region: @params[:region] || "us",
         status: "pending",
         verification_token: SecureRandom.hex(16),
-        dkim_selector: @params[:dkim_selector] || "mailo",
+        dkim_selector: @params[:dkim_selector] || "resendbyte",
         dkim_private_key: @dkim_private,
         dkim_public_key: @dkim_public,
         tracking_subdomain: @params[:tracking_subdomain] || "track",

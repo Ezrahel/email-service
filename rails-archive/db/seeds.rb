@@ -109,7 +109,7 @@ sample_domain = demo_org.domains.find_or_create_by!(domain: "example.com") do |d
   d.is_verified = true
   d.verified_at = Time.current
   d.verification_token = SecureRandom.hex(16)
-  d.dkim_selector = "mailo"
+  d.dkim_selector = "resendbyte"
   d.dkim_public_key = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC"
   d.spf_record = "v=spf1 include:mail.example.com ~all"
   d.dkim_record = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC"
@@ -125,7 +125,7 @@ sample_domain.dns_records.find_or_create_by!(record_type: "TXT", name: "example.
   r.status = "verified"
 end
 
-sample_domain.dns_records.find_or_create_by!(record_type: "TXT", name: "mailo._domainkey.example.com") do |r|
+sample_domain.dns_records.find_or_create_by!(record_type: "TXT", name: "resendbyte._domainkey.example.com") do |r|
   r.value = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC"
   r.expected_value = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC"
   r.is_verified = true

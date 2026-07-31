@@ -22,6 +22,7 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
   BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
+  BETTER_AUTH_API_KEY: z.string().optional(),
 
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
@@ -75,7 +76,7 @@ const envSchema = z.object({
   FF_ENABLE_WEBHOOKS: z.coerce.boolean().default(true),
   FF_ENABLE_BATCHING: z.coerce.boolean().default(true),
   FF_ENABLE_TEMPLATES: z.coerce.boolean().default(true),
-  FF_ENABLE_SMTP_GATEWAY: z.coerce.boolean().default(true),
+  FF_ENABLE_SMTP_GATEWAY: z.preprocess((v) => v === "true" || v === true, z.boolean().default(true)),
 
   ENCRYPTION_KEY: z.string().min(32).optional(),
 

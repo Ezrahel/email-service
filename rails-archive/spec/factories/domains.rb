@@ -6,7 +6,7 @@ FactoryBot.define do
     is_verified { true }
     verified_at { Time.current }
     verification_token { SecureRandom.hex(16) }
-    dkim_selector { "mailo" }
+    dkim_selector { "resendbyte" }
     spf_record { "v=spf1 include:mail.#{domain} ~all" }
     dkim_record { "v=DKIM1; k=rsa; p=placeholder" }
     dmarc_record { "v=DMARC1; p=none" }

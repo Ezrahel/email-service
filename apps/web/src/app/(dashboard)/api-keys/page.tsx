@@ -90,24 +90,26 @@ export default function ApiKeysPage() {
 
   const handleCreateStep1 = () => {
     if (!keyName.trim()) return;
-    setStep(2);
-  };
-
-  const handleCreateFinal = async () => {
     setCreating(true);
     try {
-      const res: any = await api.post("/api-keys", {
-        name: keyName.trim(),
-        scopes: keyScopes,
-        expiresAt: keyExpiry || undefined,
-        environment: keyEnvironment,
-      });
-      setCreatedKey(res.key || res.api_key || (res as any).key);
-      toast({ type: "success", title: "API key created" });
-      fetchKeys();
+      api
+        .post("/api-keys", {
+          name: keyName.trim(),
+          scopes: keyScopes,
+          expiresAt: keyExpiry || undefined,
+          environment: keyEnvironment,
+        })
+        .then((res: any) => {
+          setCreatedKey(res.key || res.api_key || (res as any).key);
+          toast({ type: "success", title: "API key created" });
+          fetchKeys();
+          setStep(2);
+        })
+        .catch((e: any) => {
+          toast({ type: "error", title: "Failed to create API key", message: e.message });
+        })
+        .finally(() => setCreating(false));
     } catch (e: any) {
-      toast({ type: "error", title: "Failed to create API key", message: e.message });
-    } finally {
       setCreating(false);
     }
   };
@@ -292,7 +294,7 @@ export default function ApiKeysPage() {
             <Input label="Expires At (optional)" type="datetime-local" value={keyExpiry} onChange={(e) => setKeyExpiry(e.target.value)} />
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button variant="secondary" onClick={resetCreate}>Cancel</Button>
-              <Button onClick={handleCreateStep1}>Next</Button>
+              <Button onClick={handleCreateStep1} loading={creating}>Create Key</Button>
             </div>
           </div>
         ) : (

@@ -27,10 +27,18 @@ export class DomainService {
     if (existing) throw new ConflictError("Domain already exists");
     return db.insertInto("domains").values({
       id: crypto.randomUUID(), organization_id: organizationId, domain: normalized,
-      status: "pending", dkim_selector: "mailo",
+      status: "pending", dkim_selector: "resendbyte",
       dkim_private_key_ciphertext: null, dkim_public_key: null,
       dkim_verified: false, spf_verified: false, dmarc_verified: false,
       tracking_enabled: false, created_at: new Date(), updated_at: new Date(),
     }).returningAll().executeTakeFirstOrThrow();
+  }
+
+  async delete(organizationId: string, id: string): Promise<void> {
+    await this.get(organizationId, id);
+    await db.deleteFrom("domains")
+      .where("id", "=", id)
+      .where("organization_id", "=", organizationId)
+      .execute();
   }
 }

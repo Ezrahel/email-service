@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api, setAccessToken } from "@/lib/api";
+import { api } from "@/lib/api";
 
 export function useApiKeys() {
   const [keys, setKeys] = useState<any[]>([]);
@@ -20,8 +20,6 @@ export function useApiKeys() {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
           window.location.href = "/login";
           return;
         }
@@ -46,8 +44,6 @@ export function useApiKeys() {
       return result;
     } catch (e: any) {
       if (e.status === 401) {
-        localStorage.removeItem("token");
-        setAccessToken(null);
         window.location.href = "/login";
         return;
       }
@@ -64,8 +60,6 @@ export function useApiKeys() {
       await fetchKeys();
     } catch (e: any) {
       if (e.status === 401) {
-        localStorage.removeItem("token");
-        setAccessToken(null);
         window.location.href = "/login";
         return;
       }

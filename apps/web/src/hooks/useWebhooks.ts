@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api, setAccessToken } from "@/lib/api";
+import { api } from "@/lib/api";
 
 export function useWebhooks() {
   const [webhooks, setWebhooks] = useState<any[]>([]);
@@ -20,8 +20,6 @@ export function useWebhooks() {
     } catch (e: any) {
       if (!ignoreRef.current) {
         if (e.status === 401) {
-          localStorage.removeItem("token");
-          setAccessToken(null);
           window.location.href = "/login";
           return;
         }
@@ -45,8 +43,6 @@ export function useWebhooks() {
       await fetchWebhooks();
     } catch (e: any) {
       if (e.status === 401) {
-        localStorage.removeItem("token");
-        setAccessToken(null);
         window.location.href = "/login";
         return;
       }
@@ -63,8 +59,6 @@ export function useWebhooks() {
       await fetchWebhooks();
     } catch (e: any) {
       if (e.status === 401) {
-        localStorage.removeItem("token");
-        setAccessToken(null);
         window.location.href = "/login";
         return;
       }

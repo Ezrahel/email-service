@@ -3,7 +3,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
-  title: "Mailo — Email Service",
+  title: "ResendByte — Email Service",
   description: "Email delivery platform",
 };
 

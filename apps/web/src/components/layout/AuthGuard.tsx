@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { setAccessToken, getAccessToken } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -10,19 +10,15 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const { data, isPending } = authClient.useSession();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setAccessToken(token);
-      setChecking(false);
-    } else {
+    if (!isPending && !data) {
       router.replace("/login");
     }
-  }, [router]);
+  }, [isPending, data, router]);
 
-  if (checking) {
+  if (isPending) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -32,6 +28,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
       </div>
     );
   }
+
+  if (!data) return null;
 
   return <>{children}</>;
 }

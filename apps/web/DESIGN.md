@@ -1,4 +1,4 @@
-# Mailo — Web & Dashboard UI Design
+# ResendByte — Web & Dashboard UI Design
 
 ## Design System
 
@@ -51,7 +51,7 @@ Variants: `glass-sm` (blur 12px, radius 10px), `glass-lg` (blur 32px, radius 20p
 
 ### 1. Login (`/login`)
 - Centered single column, no sidebar
-- Glass card: "Mailo" logo, "Sign in to your email dashboard" subtitle
+- Glass card: "ResendByte" logo, "Sign in to your email dashboard" subtitle
 - Email input, password input, "Sign In" button
 - States: idle → loading (button spinner) → success (redirect) → error (inline message)
 - Calls `POST /auth/login`, stores token in localStorage
@@ -159,7 +159,7 @@ Variants: `glass-sm` (blur 12px, radius 10px), `glass-lg` (blur 32px, radius 20p
 └──────────────────────────────────────────────┘
 ```
 
-- **Sidebar**: Glass panel, collapsible. Nav: Dashboard, Emails, Templates, Domains, Webhooks, API Keys. Active route highlighted. "Mailo" brand at top.
+- **Sidebar**: Glass panel, collapsible. Nav: Dashboard, Emails, Templates, Domains, Webhooks, API Keys. Active route highlighted. "ResendByte" brand at top.
 - **TopBar**: Breadcrumb (auto-generated from pathname), user avatar dropdown with "Sign Out".
 - **AuthGuard**: Checks localStorage token, redirects to `/login` if missing.
 

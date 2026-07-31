@@ -14,14 +14,14 @@ const connection = {
 };
 
 export const QUEUE_NAMES = {
-  EMAIL_CRITICAL: "email:critical",
-  EMAIL_HIGH: "email:high",
-  EMAIL_DEFAULT: "email:default",
-  EMAIL_LOW: "email:low",
-  EMAIL_SCHEDULED: "email:scheduled",
-  DELIVERY_RETRY: "delivery:retry",
-  WEBHOOK_DELIVERY: "webhook:delivery",
-  WEBHOOK_RETRY: "webhook:retry",
+  EMAIL_CRITICAL: "email-critical",
+  EMAIL_HIGH: "email-high",
+  EMAIL_DEFAULT: "email-default",
+  EMAIL_LOW: "email-low",
+  EMAIL_SCHEDULED: "email-scheduled",
+  DELIVERY_RETRY: "delivery-retry",
+  WEBHOOK_DELIVERY: "webhook-delivery",
+  WEBHOOK_RETRY: "webhook-retry",
   ANALYTICS: "analytics",
   MAINTENANCE: "maintenance",
 } as const;

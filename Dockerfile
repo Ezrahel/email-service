@@ -1,51 +1,74 @@
-# ── Build Stage ──────────────────────────────────────────────────
-FROM ruby:3.4-slim AS build
+# syntax=docker/dockerfile:1
 
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y \
-      build-essential \
-      libpq-dev \
-      libcurl4-openssl-dev \
-      libffi-dev \
-      libyaml-dev \
-      git \
-      ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
+# ── Base ─────────────────────────────────────────────────────────────
+FROM node:22-alpine AS base
+RUN apk add --no-cache libc6-compat curl tini
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+ENV PNPM_HOME=/usr/local/share/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
 WORKDIR /app
 
-COPY Gemfile Gemfile.lock ./
-RUN bundle config set without 'development test' && \
-    bundle install --jobs 4 --retry 3
+# ── Dependencies (manifest-only layer) ────────────────────────────────
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/web/package.json apps/web/
+COPY packages/api/package.json packages/api/
+COPY packages/config/package.json packages/config/
+COPY packages/crypto/package.json packages/crypto/
+COPY packages/database/package.json packages/database/
+COPY packages/domain/package.json packages/domain/
+COPY packages/errors/package.json packages/errors/
+COPY packages/gateways/smtp/package.json packages/gateways/smtp/
+COPY packages/logger/package.json packages/logger/
+COPY packages/queue/package.json packages/queue/
+COPY packages/sdks/node/package.json packages/sdks/node/
+COPY packages/telemetry/package.json packages/telemetry/
+COPY packages/tools/mcp/package.json packages/tools/mcp/
+COPY packages/tsconfig/package.json packages/tsconfig/
+COPY packages/types/package.json packages/types/
+COPY packages/workers/analytics-processor/package.json packages/workers/analytics-processor/
+COPY packages/workers/delivery-processor/package.json packages/workers/delivery-processor/
+COPY packages/workers/email-processor/package.json packages/workers/email-processor/
+COPY packages/workers/scheduled/package.json packages/workers/scheduled/
+COPY packages/workers/webhook-processor/package.json packages/workers/webhook-processor/
+RUN pnpm install --frozen-lockfile
 
-# ── Runtime Stage ────────────────────────────────────────────────
-FROM ruby:3.4-slim AS runtime
+# ── Build all workspace packages via Turborepo ────────────────────────
+FROM deps AS build
+COPY . .
+RUN pnpm build
 
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y \
-      libpq-dev \
-      libcurl4 \
-      ca-certificates \
-      tzdata \
-      curl \
-      postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
+# ── Prune to production dependencies ──────────────────────────────────
+FROM build AS prune
+RUN pnpm prune --prod --config.confirmModulesPurge=false
 
-RUN groupadd --system --gid 1000 rails && \
-    useradd --system --uid 1000 --gid rails --shell /bin/bash --create-home rails
-
+# ── API runtime ───────────────────────────────────────────────────────
+FROM base AS api
+ENV NODE_ENV=production
 WORKDIR /app
-
-COPY --from=build /usr/local/bundle /usr/local/bundle
-COPY --chown=rails:rails . .
-
-RUN mkdir -p tmp/pids log && chown -R rails:rails tmp log
-
-USER rails
-
+COPY --from=prune /app ./
 EXPOSE 3000
-
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
-  CMD curl -sf http://localhost:3000/health || exit 1
+  CMD wget -qO- http://localhost:3000/health >/dev/null || exit 1
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "packages/api/dist/server.js"]
 
-ENTRYPOINT ["/app/bin/docker-entrypoint"]
+# ── Web runtime ───────────────────────────────────────────────────────
+FROM base AS web
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=prune /app ./
+WORKDIR /app/apps/web
+EXPOSE 3000
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+  CMD wget -qO- http://localhost:3000 >/dev/null || exit 1
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "/app/apps/web/node_modules/next/dist/bin/next", "start", "-p", "3000"]
+
+# ── Worker runtime (shared; deployment overrides command) ─────────────
+FROM base AS worker
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=prune /app ./
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "packages/workers/email-processor/dist/index.js"]

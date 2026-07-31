@@ -4,6 +4,13 @@ import { logger } from "@resendbyte/logger";
 import { hashPassword, generateAPIKey } from "@resendbyte/crypto";
 
 async function seed() {
+  const nodeEnv = process.env["NODE_ENV"];
+  if (nodeEnv !== "development" && nodeEnv !== "test") {
+    logger.error({ nodeEnv }, "Refusing to seed: NODE_ENV must be 'development' or 'test'");
+    await closeDatabase();
+    return;
+  }
+
   logger.info("Seeding database...");
 
   const existing = await db.selectFrom("roles").select("id").where("name", "=", "admin").executeTakeFirst();

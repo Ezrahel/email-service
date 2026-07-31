@@ -4,7 +4,15 @@ import { ProviderRegistry, SmtpAdapter, SendGridAdapter, MailgunAdapter, SESAdap
 import type { SendEmailMessage } from "@resendbyte/types";
 import { env } from "@resendbyte/config";
 import { logger } from "@resendbyte/logger";
+import { decryptSecret } from "@resendbyte/crypto";
 import crypto from "node:crypto";
+
+class NoProviderConfigError extends Error {
+  constructor() {
+    super("No active provider configuration available");
+    this.name = "NoProviderConfigError";
+  }
+}
 
 const registry = new ProviderRegistry();
 registry.register(new SmtpAdapter(), { priority: 10, weight: 1 });
@@ -17,8 +25,9 @@ async function loadProviderConfigs(): Promise<void> {
   const configs = await db.selectFrom("provider_configs").selectAll().where("is_active", "=", true).where("deleted_at", "is", null).execute();
   for (const config of configs) {
     try {
+      const apiKey = decryptSecret(config.credentials_ciphertext);
       registry.setConfig(config.provider_type as any, {
-        apiKey: config.credentials_ciphertext,
+        apiKey,
         ...config.settings,
       } as any);
     } catch {
@@ -76,7 +85,10 @@ async function simulateSandboxSend(email: any, deliveryId: string, now: Date): P
 
 async function getProviderConfigId(): Promise<string> {
   const config = await db.selectFrom("provider_configs").select("id").where("is_active", "=", true).where("deleted_at", "is", null).executeTakeFirst();
-  return config?.id || crypto.randomUUID();
+  if (!config?.id) {
+    throw new NoProviderConfigError();
+  }
+  return config.id;
 }
 
 async function upsertEmailMetrics(emailId: string, deliveryId: string, now: Date): Promise<void> {
@@ -102,7 +114,21 @@ async function sendEmail(job: { emailMessageId: string; organizationId: string; 
   const deliveryId = crypto.randomUUID();
   const now = new Date();
 
-  const providerConfigId = await getProviderConfigId();
+  let providerConfigId: string;
+  try {
+    providerConfigId = await getProviderConfigId();
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    logger.error({ emailMessageId: email.id, error: msg }, "Skipping email: no active provider configuration");
+    await db.updateTable("email_messages").set({
+      status: "failed",
+      failed_at: now,
+      failure_reason: msg,
+      retry_count: email.retry_count + 1,
+      updated_at: now,
+    }).where("id", "=", email.id).execute();
+    return;
+  }
 
   await db.insertInto("deliveries").values({
     id: deliveryId, email_message_id: email.id, provider_config_id: providerConfigId,

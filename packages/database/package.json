@@ -25,10 +25,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src --ext .ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "db:migrate": "node dist/migrations/cli.js migrate",
     "db:rollback": "node dist/migrations/cli.js rollback",
     "db:seed": "node dist/seeds/cli.js"

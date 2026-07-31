@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { AuthService, EmailService, DomainService, TemplateService, WebhookService, AnalyticsService, SuppressionService, StorageService, BillingService, AuditService } from "@resendbyte/domain";
+import { AuthService, EmailService, DomainService, TemplateService, WebhookService, AnalyticsService, SuppressionService, StorageService, BillingService, AuditService, ProviderConfigService } from "@resendbyte/domain";
 import { db } from "@resendbyte/database";
 import { ValidationError, NotFoundError, InternalError, QuotaExceededError, UnauthorizedError } from "@resendbyte/errors";
 import { verifyWebhookSignature } from "@resendbyte/crypto";
@@ -20,6 +20,7 @@ const suppressionService = new SuppressionService();
 const storageService = new StorageService();
 const billingService = new BillingService();
 const auditService = new AuditService();
+const providerConfigService = new ProviderConfigService();
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -55,6 +56,30 @@ const sendEmailSchema = z.object({
 const sendTemplateSchema = z.object({
   to: z.string().email(),
   variables: z.record(z.string()).optional(),
+});
+
+const providerTypeSchema = z.enum(["smtp", "sendgrid", "mailgun", "ses", "postmark"]);
+const createProviderConfigSchema = z.object({
+  providerType: providerTypeSchema,
+  name: z.string().min(1).max(255),
+  credentials: z.string().min(1).max(4096),
+  settings: z.record(z.unknown()).optional(),
+  weight: z.number().int().min(0).max(100).optional(),
+  isActive: z.boolean().optional(),
+  dailyLimit: z.number().int().min(0).nullable().optional(),
+  monthlyLimit: z.number().int().min(0).nullable().optional(),
+});
+const updateProviderConfigSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  credentials: z.string().min(1).max(4096).optional(),
+  settings: z.record(z.unknown()).optional(),
+  weight: z.number().int().min(0).max(100).optional(),
+  isActive: z.boolean().optional(),
+  dailyLimit: z.number().int().min(0).nullable().optional(),
+  monthlyLimit: z.number().int().min(0).nullable().optional(),
+});
+const toggleProviderConfigSchema = z.object({
+  isActive: z.boolean(),
 });
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
@@ -399,6 +424,45 @@ export async function auditRoutes(app: FastifyInstance): Promise<void> {
   });
 }
 
+export async function providerConfigRoutes(app: FastifyInstance): Promise<void> {
+  app.get("/providers", { preHandler: [requireScope("api_key:read")] }, async (request, reply) => {
+    const providers = await providerConfigService.list((request as any).organizationId);
+    reply.send({ data: providers });
+  });
+
+  app.post("/providers", { preHandler: [requireScope("api_key:write"), validateBody(createProviderConfigSchema)] }, async (request, reply) => {
+    const body = request.body as z.infer<typeof createProviderConfigSchema>;
+    const provider = await providerConfigService.create((request as any).organizationId, body);
+    reply.status(201).send({ data: provider });
+  });
+
+  app.get("/providers/:id", { preHandler: [requireScope("api_key:read"), validateParams(idParamSchema)] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const provider = await providerConfigService.get((request as any).organizationId, id);
+    reply.send({ data: provider });
+  });
+
+  app.patch("/providers/:id", { preHandler: [requireScope("api_key:write"), validateParams(idParamSchema), validateBody(updateProviderConfigSchema)] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as z.infer<typeof updateProviderConfigSchema>;
+    const provider = await providerConfigService.update((request as any).organizationId, id, body);
+    reply.send({ data: provider });
+  });
+
+  app.patch("/providers/:id/toggle", { preHandler: [requireScope("api_key:write"), validateParams(idParamSchema), validateBody(toggleProviderConfigSchema)] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const { isActive } = request.body as z.infer<typeof toggleProviderConfigSchema>;
+    const provider = await providerConfigService.toggle((request as any).organizationId, id, isActive);
+    reply.send({ data: provider });
+  });
+
+  app.delete("/providers/:id", { preHandler: [requireScope("api_key:write"), validateParams(idParamSchema)] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await providerConfigService.delete((request as any).organizationId, id);
+    reply.status(204).send();
+  });
+}
+
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await authRoutes(app);
   await apiKeyRoutes(app);
@@ -412,4 +476,5 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await dashboardRoutes(app);
   await billingRoutes(app);
   await auditRoutes(app);
+  await providerConfigRoutes(app);
 }

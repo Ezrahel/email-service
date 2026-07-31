@@ -37,7 +37,10 @@ const mockDb = vi.hoisted(() => {
 
 vi.mock("@resendbyte/database", () => ({
   db: mockDb,
-  sql: { lit: vi.fn() },
+  sql: (() => {
+    const fn = (_strings: TemplateStringsArray, ..._values: any[]) => ({ as: vi.fn(() => ({})), execute: vi.fn() });
+    return fn;
+  })(),
 }));
 
 import { EmailService } from "../EmailService.js";

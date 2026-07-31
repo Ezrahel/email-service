@@ -10,3 +10,4 @@ export { SuppressionService } from "./services/SuppressionService.js";
 export { StorageService } from "./services/StorageService.js";
 export { BillingService } from "./services/BillingService.js";
 export { AuditService } from "./services/AuditService.js";
+export { ProviderConfigService } from "./services/ProviderConfigService.js";

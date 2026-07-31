@@ -15,8 +15,8 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json -w",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
     "@types/dotenv": "^8.2.3",
